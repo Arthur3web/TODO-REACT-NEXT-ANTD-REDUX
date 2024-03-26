@@ -19,6 +19,9 @@ export const todo = createSlice({
   initialState,
   reducers: {
     addTodo: (state, action) => {
+      console.log(state);
+      console.log(action);
+      
       const todo = state.list.find((todo) => todo.name === action.payload.name);
       if (!todo) {
         state.list.push(action.payload);
