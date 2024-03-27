@@ -8,7 +8,7 @@ interface DataTypes {
   key: string;
   title: string;
   timeend: Date;
-  done: boolean;
+  completed: boolean;
 }
 
 const CustomTable: React.FC = ({}) => {
@@ -38,7 +38,7 @@ const CustomTable: React.FC = ({}) => {
       width: 160,
       ellipsis: true,
       render: (text: string, record: DataTypes) => (
-        <div style={{ color: record.done ? "#9333ea" : "black" }}>
+        <div style={{ color: record.completed ? "#9333ea" : "black" }}>
           {record.title}
         </div>
       ),
@@ -48,6 +48,9 @@ const CustomTable: React.FC = ({}) => {
       dataIndex: "timeend",
       key: "timeend",
       width: 90,
+      render: (timeend: Date) => timeend.toLocaleString(),
+      sorter: (a, b) => new Date(a.timeend).getTime() - new Date(b.timeend).getTime(),
+      sortDirections: ['descend', 'ascend'],
       filters: [
         {
           text: "Today",
@@ -71,28 +74,28 @@ const CustomTable: React.FC = ({}) => {
       title: "Status",
       dataIndex: "completed",
       key: "completed",
-      // render: (done: boolean) => (
-      //   <span>{done ? "Completed" : "Not Completed"}</span>
-      // ),
-      // width: 80,
-      // filters: [
-      //   {
-      //     text: "Completed",
-      //     value: "Completed",
-      //   },
-      //   {
-      //     text: "Not Completed",
-      //     value: "Not Completed",
-      //   },
-      // ],
-      // onFilter: (value, record) => {
-      //   if (value === "Completed") {
-      //     return record.done;
-      //   } else if (value === "Not Completed") {
-      //     return !record.done;
-      //   }
-      //   return true;
-      // },
+      render: (completed: boolean) => (
+        <span>{completed ? "Completed" : "Not Completed"}</span>
+      ),
+      width: 80,
+      filters: [
+        {
+          text: "Completed",
+          value: "Completed",
+        },
+        {
+          text: "Not Completed",
+          value: "Not Completed",
+        },
+      ],
+      onFilter: (value, record) => {
+        if (value === "Completed") {
+          return record.completed;
+        } else if (value === "Not Completed") {
+          return !record.completed;
+        }
+        return true;
+      },
     },
     {
       title: "Action",

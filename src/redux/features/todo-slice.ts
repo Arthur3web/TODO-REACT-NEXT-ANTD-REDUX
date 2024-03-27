@@ -1,11 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 type Todo = {
   id: string;
-  name: string;
+  title: string;
   timestart: Date;
   timeend: Date;
-  done: boolean;
+  completed: boolean;
 };
 
 type TodoState = {
@@ -21,24 +21,15 @@ export const todo = createSlice({
   initialState,
   reducers: {
     addTodo: (state, action) => {
-      console.log(state);
-      console.log(action);
-      
-      const todo = state.list.push({
-        id: new Date().toISOString(),
-        name: action.payload,
-        timestart: new Date(),
-        timeend: action.payload,
-        done: false,
-      });
+      state.list.push(action.payload); // Просто добавляем объект задачи в массив
     },
-    removeTodo: (state, action) => {
+    removeTodo: (state, action: PayloadAction<string>) => {
       state.list = state.list.filter((todo) => todo.id !== action.payload);
     },
-    toggleTodo: (state, action) => {
+    toggleTodo: (state, action: PayloadAction<string>) => {
       const todo = state.list.find((todo) => todo.id === action.payload);
       if (todo) {
-        todo.done = !todo.done;
+        todo.completed = !todo.completed;
       }
     },
   },
