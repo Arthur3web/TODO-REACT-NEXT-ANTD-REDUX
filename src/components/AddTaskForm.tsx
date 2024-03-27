@@ -1,33 +1,36 @@
 import { useState } from "react";
 import { Modal, Form, Input, Button } from "antd";
+import { useDispatch } from "react-redux";
+import { addTodo } from "@/redux/features/todo-slice";
 
-export interface Task {
-  id: string;
-  title: string;
-  timeend: string;
-  completed: boolean;
-  timestart: string;
-}
+// export interface Task {
+//   id: string;
+//   title: string;
+//   timeend: string;
+//   completed: boolean;
+//   timestart: string;
+// }
 
 interface AddTaskFormProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: (task: Task) => void;
 }
 
 const AddTaskForm: React.FC<AddTaskFormProps> = ({
   visible,
   onCancel,
-  onSubmit,
 }) => {
+  const dispatch = useDispatch();
+
   const [title, setTitle] = useState<string>("");
   const [timeend, setTimeend] = useState<string>("");
 
-  const handleSubmit = () => {
-    onSubmit({ title, timeend } as Task);
-    setTitle("");
-    setTimeend("");
-  };
+  const handleAddTask = (title: string, timeend: Date) => {
+    dispatch(addTodo(title));
+    setTitle('');
+    setTimeend('');
+    onCancel();
+  }
 
   return (
     <Modal
@@ -41,8 +44,8 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({
     >
       <Form
         name="task"
-        initialValues={{ remember: true }}
-        onFinish={handleSubmit}
+        // initialValues={{ remember: true }}
+        // onFinish={/*handleSubmit*/}
       >
         <Form.Item>
           <Input
@@ -54,7 +57,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({
         <Form.Item >
           <Input type="datetime-local" value={timeend} onChange={(e) => setTimeend(e.target.value)} />
         </Form.Item>
-        <Button type="primary" htmlType="submit" onClick={handleSubmit}>
+        <Button type="primary" htmlType="submit" onClick={handleAddTask}>
           Add Task
         </Button>
       </Form>

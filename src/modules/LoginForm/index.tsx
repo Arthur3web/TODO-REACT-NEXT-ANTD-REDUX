@@ -33,19 +33,24 @@ const StyledButton = styled(Button)`
 `;
 
 const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
+  const [isModalVisible, setIsModalVisible] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [registrationModalVisible, setRegistrationModalVisible] =
     useState(false);
 
   const handleLogin = async (values: any) => {
     setLoading(true);
-    console.log("Login values:", values);
-    setLoading(false);
-    onCancel();
+    setIsLoggedIn(true);
+    setIsModalVisible(false);
   };
 
-  const handleCancel = () => {
-    onCancel();
+  const handleCloseModal = () => {
+    if (!isLoggedIn) {
+      return;
+    }
+    setIsModalVisible(false);
   };
 
   const handleShowRegistrationModal = () => {
@@ -64,8 +69,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
             AUTHORIZATION
           </div>
         }
-        open={visible}
-        onCancel={handleCancel}
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
         footer={null}
         centered
       >

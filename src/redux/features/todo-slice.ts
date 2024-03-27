@@ -1,8 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 type Todo = {
-  id: number;
+  id: string;
   name: string;
+  timestart: Date;
+  timeend: Date;
   done: boolean;
 };
 
@@ -22,10 +24,13 @@ export const todo = createSlice({
       console.log(state);
       console.log(action);
       
-      const todo = state.list.find((todo) => todo.name === action.payload.name);
-      if (!todo) {
-        state.list.push(action.payload);
-      }
+      const todo = state.list.push({
+        id: new Date().toISOString(),
+        name: action.payload,
+        timestart: new Date(),
+        timeend: action.payload,
+        done: false,
+      });
     },
     removeTodo: (state, action) => {
       state.list = state.list.filter((todo) => todo.id !== action.payload);

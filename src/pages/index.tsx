@@ -20,7 +20,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
-import AddTaskForm, { Task } from "@/components/AddTaskForm";
+import AddTaskForm from "@/components/AddTaskForm";
 import CustomTable from "@/ui/CustomTable/CustomTable";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -89,49 +89,7 @@ const justifyOptions = [
 const alignOptions = ["flex-start", "center", "flex-end"];
 
 export default function Home() {
-  const [tasklist, setTasklist] = useState<Task[]>([]);
   const [isClickAddTaskButton, setClickAddTaskButton] = useState(false);
-
-  const handleAddTask = (task: Task) => {
-    setTasklist([
-      ...tasklist,
-      {
-        ...task,
-        id: Date.now().toString(),
-        completed: false,
-        timestart: Date.now().toString(),
-      },
-    ]);
-    setClickAddTaskButton(false);
-  };
-
-  const handleDeleteTask = (id: string) => {
-    setTasklist(tasklist.filter((item) => item.id !== id));
-  };
-
-  const toggleStatusTask = (id: string) => {
-    const element = tasklist.findIndex((elem) => elem.id === id);
-    const newTaskList = [...tasklist];
-    newTaskList[element] = {
-      ...newTaskList[element],
-      completed: !newTaskList[element].completed,
-    };
-    setTasklist(newTaskList);
-  };
-
-  const handleEditTask = (id: string, title: string /* timeend: Date*/) => {
-    const updatedTasklist = tasklist.map((item) => {
-      if (item.id === id) {
-        return {
-          ...item,
-          title: title,
-          // timeEnd: timeend,
-        };
-      }
-      return item;
-    });
-    setTasklist(updatedTasklist);
-  };
 
   const content = <Button style={{ width: 150, height: 40 }}>Exit</Button>;
   return (
@@ -211,12 +169,7 @@ export default function Home() {
                       background: "white",
                     }}
                   >
-                    <CustomTable
-                      tasklist={tasklist}
-                      onDeleteTask={handleDeleteTask}
-                      toggleStatusTask={toggleStatusTask}
-                      onEditTask={handleEditTask}
-                    />
+                    <CustomTable/>
                     <Button
                       icon={
                         <PlusOutlined
@@ -246,7 +199,6 @@ export default function Home() {
       <AddTaskForm
         visible={isClickAddTaskButton}
         onCancel={() => setClickAddTaskButton(false)}
-        onSubmit={handleAddTask}
       />
     </>
   );
