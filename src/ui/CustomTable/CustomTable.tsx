@@ -1,8 +1,15 @@
 import { Button, Input, Table, TableColumnsType } from "antd";
 import { CheckOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
-import { removeTodo, toggleTodo } from "@/redux/features/todo-slice";
+import {
+  editTodo,
+  removeTodo,
+  toggleStatusTodo,
+} from "@/redux/features/todo-slice";
 import { RootState } from "@/redux/store";
+import { useEffect, useState } from "react";
+import { JSONPlaceholder } from "@freepi/jsonplaceholder";
+import axios from "axios";
 
 interface DataTypes {
   key: string;
@@ -11,9 +18,33 @@ interface DataTypes {
   completed: boolean;
 }
 
+const jsonPlaceHolder = new JSONPlaceholder();
+
 const CustomTable: React.FC = ({}) => {
-  const todoList = useSelector((state: RootState) => state.todo.list);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<DataTypes[]>([]);
+  const todoList = useSelector((state: RootState) => state.todo.taskList);
   const dispatch = useDispatch();
+  const [editingTask, setEditingTask] = useState<{
+    id: string | null;
+    title: string;
+  }>({ id: null, title: "" });
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await axios.get<DataTypes[]>("https://jsonplaceholder.typicode.com/todos");
+        setTasks(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError("Failed to fetch tasks");
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   const tasklistData = (todoList: any[]) => {
     return todoList.map((task) => ({
@@ -22,12 +53,33 @@ const CustomTable: React.FC = ({}) => {
     }));
   };
 
-  const handleDelete = (id: string) => {
+
+  const handleDeleteTask = (id: string) => {
     dispatch(removeTodo(id));
   };
 
-  const toggleStatus = (id: string) => {
-    dispatch(toggleTodo(id));
+  const toggleStatusTask = (id: string) => {
+    dispatch(toggleStatusTodo(id));
+  };
+
+  const handleEditTask = (record: DataTypes) => {
+    setEditingTask({ id: record.key, title: record.title });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingTask({ ...editingTask, title: e.target.value });
+  };
+
+  const handleSaveEdit = (id: string, title: string) => {
+    dispatch(
+      editTodo({
+        id: id,
+        newData: {
+          title: title,
+        },
+      })
+    );
+    setEditingTask({ id: null, title: "" });
   };
 
   const columns: TableColumnsType<DataTypes> = [
@@ -37,39 +89,52 @@ const CustomTable: React.FC = ({}) => {
       key: "title",
       width: 160,
       ellipsis: true,
-      render: (text: string, record: DataTypes) => (
-        <div style={{ color: record.completed ? "#9333ea" : "black" }}>
-          {record.title}
-        </div>
-      ),
+      render: (text: string, record: DataTypes) =>
+        record.key === editingTask.id ? (
+          <Input
+            value={editingTask.title}
+            onChange={handleInputChange}
+            onPressEnter={() => handleSaveEdit(record.key, editingTask.title)}
+          />
+        ) : (
+          <div
+            style={{
+              color: record.completed ? "#9333ea" : "black",
+              textDecoration: record.completed ? "line-through" : "",
+            }}
+          >
+            {record.title}
+          </div>
+        ),
     },
-    {
-      title: "End Time",
-      dataIndex: "timeend",
-      key: "timeend",
-      width: 90,
-      render: (timeend: Date) => timeend.toLocaleString(),
-      sorter: (a, b) => new Date(a.timeend).getTime() - new Date(b.timeend).getTime(),
-      sortDirections: ['descend', 'ascend'],
-      filters: [
-        {
-          text: "Today",
-          value: "Today",
-        },
-        {
-          text: "All",
-          value: "All",
-        },
-      ],
-      onFilter: (value, record) => {
-        const currentDate = new Date();
-        const recordDate = new Date(record.timeend);
-        if (value === "Today") {
-          return recordDate.toDateString() === currentDate.toDateString();
-        }
-        return true;
-      },
-    },
+    // {
+    //   title: "End Time",
+    //   dataIndex: "timeend",
+    //   key: "timeend",
+    //   width: 90,
+    //   render: (timeend: Date, record: DataTypes) => timeend.toLocaleString(),
+    //   sorter: (a, b) =>
+    //     new Date(a.timeend).getTime() - new Date(b.timeend).getTime(),
+    //   sortDirections: ["descend", "ascend"],
+    //   filters: [
+    //     {
+    //       text: "Today",
+    //       value: "Today",
+    //     },
+    //     {
+    //       text: "All",
+    //       value: "All",
+    //     },
+    //   ],
+    //   onFilter: (value, record) => {
+    //     const currentDate = new Date();
+    //     const recordDate = new Date(record.timeend);
+    //     if (value === "Today") {
+    //       return recordDate.toDateString() === currentDate.toDateString();
+    //     }
+    //     return true;
+    //   },
+    // },
     {
       title: "Status",
       dataIndex: "completed",
@@ -104,16 +169,19 @@ const CustomTable: React.FC = ({}) => {
       render: (_, record) => (
         <>
           <Button
-            onClick={() => toggleStatus(record.key)}
+            onClick={() => toggleStatusTask(record.key)}
             style={{ fontSize: 10 }}
           >
             <CheckOutlined style={{ color: "purple" }} />
           </Button>
-          <Button style={{ fontSize: 10 }}>
+          <Button
+            onClick={() => handleEditTask(record)}
+            style={{ fontSize: 10 }}
+          >
             <EditOutlined />
           </Button>
           <Button
-            onClick={() => handleDelete(record.key)}
+            onClick={() => handleDeleteTask(record.key)}
             style={{ fontSize: 10 }}
           >
             <DeleteOutlined style={{ color: "red" }} />
@@ -127,7 +195,8 @@ const CustomTable: React.FC = ({}) => {
   return (
     <Table
       columns={columns}
-      dataSource={tasklistData(todoList)}
+      // dataSource={tasklistData(todoList)}
+      dataSource={tasks}
       pagination={{ pageSize: 3 }}
     />
   );

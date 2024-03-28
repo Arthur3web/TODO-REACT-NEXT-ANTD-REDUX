@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import AddTaskForm from "@/components/AddTaskForm";
 import CustomTable from "@/ui/CustomTable/CustomTable";
+import LoginForm from "@/modules/LoginForm";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -90,8 +91,23 @@ const alignOptions = ["flex-start", "center", "flex-end"];
 
 export default function Home() {
   const [isClickAddTaskButton, setClickAddTaskButton] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
-  const content = <Button style={{ width: 150, height: 40 }}>Exit</Button>;
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setIsModalVisible(true);
+  };
+
+  // const handleLogout = () => {
+  //   setIsLoggedIn(false);
+  // };
+
+
+  const content = <>
+  <Button style={{ width: 150, height: 40, marginRight: 10 }} onClick={handleLogin}> Login</Button>
+  <Button style={{ width: 150, height: 40 }} >Exit</Button>;
+  </>
   return (
     <>
       <main>
@@ -199,6 +215,11 @@ export default function Home() {
       <AddTaskForm
         visible={isClickAddTaskButton}
         onCancel={() => setClickAddTaskButton(false)}
+      />
+      <LoginForm
+      visible={isModalVisible}
+      onCancel={() => setIsModalVisible(false)}
+      onLogin={() => setIsLoggedIn(true)}
       />
     </>
   );

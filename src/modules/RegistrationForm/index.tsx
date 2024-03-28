@@ -3,6 +3,8 @@ import { Modal, Form, Input, Button } from "antd";
 import Link from "next/link";
 import styled from "styled-components";
 import LoginForm from "../LoginForm";
+import { createUser } from "@/redux/features/todo-slice";
+import { useDispatch } from "react-redux";
 
 interface RegistrationFormProps {
   visible: boolean;
@@ -31,31 +33,37 @@ const StyledButton = styled(Button)`
     }
   }
 `;
-
+const num: number = 4
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
   visible,
   onCancel,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState<string>("");
+  const dispatch = useDispatch();
 
-  const handleLogin = async (values: any) => {
-    setLoading(true);
-    console.log("Login values:", values);
-    setLoading(false);
-    onCancel();
-  };
+  const handleRegister = () => {
+    if (email && password && username) {
+      dispatch(
+        createUser({
+          id: new Date().getTime(),
+          username: username,
+          email: email,
+          password: password, 
+        })
+      );
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      onCancel();
+    } else {
+      console.error("Неполные данные");
+    }
+  }
 
   const handleCancel = () => {
     onCancel();
-  };
-
-  const handleShowLoginModal = () => {
-    setLoginModalVisible(true);
-  };
-
-  const handleCancelLoginModal = () => {
-    setLoginModalVisible(false);
   };
 
   return (
@@ -71,11 +79,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         footer={null}
         centered
       >
-        <Form
-          name="login"
-          initialValues={{ remember: true }}
-          onFinish={handleLogin}
-        >
+        <Form>
           <Form.Item
             name="email"
             rules={[{ required: true, message: "Please input your email!" }]}
@@ -99,22 +103,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               Do you have an account?{" "}
               <Link
                 href="#"
-                onClick={handleShowLoginModal}
                 style={{ color: "red" }}
               >
                 Login
               </Link>
             </div>
-            <StyledButton type="primary" htmlType="submit" loading={loading}>
-              Login
+            <StyledButton type="primary" htmlType="submit" onClick={handleRegister}>
+              Register
             </StyledButton>
           </Form.Item>
         </Form>
       </Modal>
-      <LoginForm
-        visible={loginModalVisible}
-        onCancel={handleCancelLoginModal}
-      />
     </>
   );
 };

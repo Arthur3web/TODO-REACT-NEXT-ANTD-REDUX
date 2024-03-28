@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-type Todo = {
+type TodoType = {
   id: string;
   title: string;
   timestart: Date;
@@ -8,12 +8,21 @@ type Todo = {
   completed: boolean;
 };
 
+type UsersType = {
+  id: string;
+  email: string;
+  password: string;
+  username: string;
+}
+
 type TodoState = {
-  list: Todo[];
+  taskList: TodoType[];
+  userList: UsersType[];
 };
 
 const initialState: TodoState = {
-  list: [],
+  taskList: [],
+  userList: [],
 };
 
 export const todo = createSlice({
@@ -21,19 +30,34 @@ export const todo = createSlice({
   initialState,
   reducers: {
     addTodo: (state, action) => {
-      state.list.push(action.payload); // Просто добавляем объект задачи в массив
+      state.taskList.push(action.payload);
+      console.log(state);
+      console.log(action);
     },
     removeTodo: (state, action: PayloadAction<string>) => {
-      state.list = state.list.filter((todo) => todo.id !== action.payload);
+      state.taskList = state.taskList.filter((todo) => todo.id !== action.payload);
     },
-    toggleTodo: (state, action: PayloadAction<string>) => {
-      const todo = state.list.find((todo) => todo.id === action.payload);
+    toggleStatusTodo: (state, action: PayloadAction<string>) => {
+      const todo = state.taskList.find((todo) => todo.id === action.payload);
       if (todo) {
         todo.completed = !todo.completed;
       }
     },
+    editTodo: (state, action: PayloadAction<{ id: string, newData: Partial<TodoType> }>) => {
+      const { id, newData } = action.payload;
+      const todoIndex = state.taskList.findIndex(todo => todo.id === id);
+      if (todoIndex !== -1) {
+        state.taskList[todoIndex] = { ...state.taskList[todoIndex], ...newData };
+      }
+    },
+    createUser: (state, action) => {
+      state.userList.push(action.payload);
+      console.log(state);
+      console.log(action);
+    }
+    
   },
 });
 
-export const { addTodo, removeTodo, toggleTodo } = todo.actions;
+export const { addTodo, removeTodo, toggleStatusTodo, editTodo, createUser } = todo.actions;
 export default todo.reducer;

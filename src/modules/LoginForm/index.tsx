@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Modal, Form, Input, Button } from "antd";
 import Link from "next/link";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import RegistrationForm from "../RegistrationForm";
+import { useForm } from "antd/es/form/Form";
 
 interface LoginFormProps {
   visible: boolean;
   onCancel: () => void;
+  onLogin: () => void;
 }
 
 const StyledButton = styled(Button)`
@@ -32,29 +34,35 @@ const StyledButton = styled(Button)`
   }
 `;
 
-const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
-  const [isModalVisible, setIsModalVisible] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+interface IInitialValues  {
+  email: string;
+  password: string;
+}
 
+const initialValues: IInitialValues = {
+  email: '',
+  password: ''
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel, onLogin }) => {
+  // const [form] = useForm()
   const [loading, setLoading] = useState(false);
   const [registrationModalVisible, setRegistrationModalVisible] =
     useState(false);
-
+    // console.log(form)
   const handleLogin = async (values: any) => {
-    setLoading(true);
-    setIsLoggedIn(true);
-    setIsModalVisible(false);
+    onLogin();
+    setLoading(true);;
+    onCancel();
   };
 
   const handleCloseModal = () => {
-    if (!isLoggedIn) {
-      return;
-    }
-    setIsModalVisible(false);
+    onCancel();
   };
 
   const handleShowRegistrationModal = () => {
     setRegistrationModalVisible(true);
+    onCancel();
   };
 
   const handleCancelRegistrationModal = () => {
@@ -69,14 +77,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
             AUTHORIZATION
           </div>
         }
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        open={visible}
+        onCancel={handleCloseModal}
         footer={null}
         centered
       >
         <Form
           name="login"
-          initialValues={{ remember: true }}
+          initialValues={initialValues}
           onFinish={handleLogin}
         >
           <Form.Item
@@ -102,7 +110,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
                 Register
               </Link>
             </div>
-            <StyledButton type="primary" htmlType="submit" loading={loading}>
+            <StyledButton type="primary" htmlType="submit" /*loading={loading}*/  >
               Login
             </StyledButton>
           </Form.Item>

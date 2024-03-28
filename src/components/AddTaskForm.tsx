@@ -29,10 +29,10 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({
     if (title && timeend) {
       dispatch(
         addTodo({
-          id: new Date().toISOString(),
+          id: new Date().getTime(),
           title: title,
           timestart: new Date().toISOString(),
-          timeend: timeend, // сохраняем как объект Date
+          timeend: timeend.toLocaleString(),
           completed: false,
         })
       );
@@ -47,7 +47,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({
   return (
     <Modal
       title={<div style={{ textAlign: "center", color: "#9333ea" }}>CREATE TASK</div>}
-      visible={visible}
+      open={visible}
       onCancel={onCancel}
       footer={null}
       centered
