@@ -25,6 +25,8 @@ import AddTaskForm from "@/components/AddTaskForm";
 import CustomTable, { DataTypes } from "@/ui/CustomTable/CustomTable";
 import LoginForm from "@/modules/LoginForm";
 import axios from "axios";
+import { fetchTodo } from "@/redux/features/todo-slice";
+import { useDispatch } from "react-redux";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -100,6 +102,8 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const dispatch = useDispatch();
+
   useEffect(() => { //для вывода имени пользователя
     const userDataString = localStorage.getItem('loggedInUser');
     if (userDataString) {
@@ -124,6 +128,7 @@ export default function Home() {
           const response = await axios.get<DataTypes[]>(`https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`);
           setTasks(response.data);
           // console.log(tasks);
+          dispatch(fetchTodo(response.data));
           setLoading(false);
         } catch (error) {
           setError("Failed to fetch tasks");
@@ -134,7 +139,7 @@ export default function Home() {
       fetchTasks();
     }
     
-  }, []);
+  }, [dispatch]);
 
   // if (loading) {
   //   return (
