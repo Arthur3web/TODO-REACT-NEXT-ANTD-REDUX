@@ -54,10 +54,13 @@ export const todo = createSlice({
       state.userList.push(action.payload);
       console.log(state);
       console.log(action);
-    }
+    },
+    fetchTodo: (state, action: PayloadAction<TodoType[]>) => {
+      state.taskList = action.payload;
+    },
     
   },
 });
 
-export const { addTodo, removeTodo, toggleStatusTodo, editTodo, createUser } = todo.actions;
+export const { addTodo, removeTodo, toggleStatusTodo, editTodo, createUser, fetchTodo } = todo.actions;
 export default todo.reducer;

@@ -9,6 +9,7 @@ import {
   Menu,
   MenuProps,
   Popover,
+  Spin,
   Typography,
 } from "antd";
 import {
@@ -19,10 +20,11 @@ import {
   ScheduleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddTaskForm from "@/components/AddTaskForm";
-import CustomTable from "@/ui/CustomTable/CustomTable";
+import CustomTable, { DataTypes } from "@/ui/CustomTable/CustomTable";
 import LoginForm from "@/modules/LoginForm";
+import axios from "axios";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -92,21 +94,74 @@ const alignOptions = ["flex-start", "center", "flex-end"];
 export default function Home() {
   const [isClickAddTaskButton, setClickAddTaskButton] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [userData, setUserData] = useState("");
+  const [tasks, setTasks] = useState<DataTypes[]>([]);
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { //для вывода имени пользователя
+    const userDataString = localStorage.getItem('loggedInUser');
+    if (userDataString) {
+      const parsedUserData = JSON.parse(userDataString);
+      const { username } = parsedUserData;
+      setUserData(username);
+    }
+  }, []); 
+
+  useEffect(() => {
+    const loggedInUsers = localStorage.getItem('loggedInUser');
+    if (!loggedInUsers) {
+      return;
+    }
+    const loggedInUser = JSON.parse(loggedInUsers)
+
+    const isLogin = localStorage.getItem('isLoggedIn');
+
+    if (isLogin) {
+      const fetchTasks = async () => {
+        try {
+          const response = await axios.get<DataTypes[]>(`https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`);
+          setTasks(response.data);
+          // console.log(tasks);
+          setLoading(false);
+        } catch (error) {
+          setError("Failed to fetch tasks");
+          setLoading(false);
+        }
+      };
+  
+      fetchTasks();
+    }
+    
+  }, []);
+
+  // if (loading) {
+  //   return (
+  //   <Spin tip="Loading" size="large">
+  //     <div className="content"/>
+  //   </Spin>
+  //   )
+  // }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+  
+  
+  
+  const handleLogin = () => {;
     setIsModalVisible(true);
   };
 
-  // const handleLogout = () => {
-  //   setIsLoggedIn(false);
-  // };
+  const handleLogout = () => {
+    localStorage.clear();
+  };
 
 
   const content = <>
   <Button style={{ width: 150, height: 40, marginRight: 10 }} onClick={handleLogin}> Login</Button>
-  <Button style={{ width: 150, height: 40 }} >Exit</Button>;
+  <Button style={{ width: 150, height: 40 }} onClick={handleLogout}>Exit</Button>
   </>
   return (
     <>
@@ -151,7 +206,7 @@ export default function Home() {
                   <Flex align="center" justify="space-between">
                     <Typography style={{ color: "#9333ea" }}>To-Do</Typography>
                     <Typography style={{ color: "#9333ea" }}>
-                      Username
+                      {userData}
                     </Typography>
                     <Popover
                       content={content}
@@ -193,7 +248,7 @@ export default function Home() {
                         />
                       }
                       style={{
-                        width: 185,
+                        width: 150,
                         position: "absolute",
                         marginTop: "300px",
                         height: 40,
@@ -219,7 +274,6 @@ export default function Home() {
       <LoginForm
       visible={isModalVisible}
       onCancel={() => setIsModalVisible(false)}
-      onLogin={() => setIsLoggedIn(true)}
       />
     </>
   );

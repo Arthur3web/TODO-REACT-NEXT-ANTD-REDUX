@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Modal, Form, Input, Button } from "antd";
+import { Modal, Form, Input, Button, message } from "antd";
 import Link from "next/link";
 import styled from "styled-components";
 import LoginForm from "../LoginForm";
 import { createUser } from "@/redux/features/todo-slice";
 import { useDispatch } from "react-redux";
+import axios from "axios";
+import { DataTypes } from "@/ui/CustomTable/CustomTable";
 
 interface RegistrationFormProps {
   visible: boolean;
@@ -33,7 +35,6 @@ const StyledButton = styled(Button)`
     }
   }
 `;
-const num: number = 4
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
   visible,
   onCancel,
@@ -41,26 +42,33 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string>("");
-  const dispatch = useDispatch();
+  const [users, setUsers] = useState<DataTypes[]>([]);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (email && password && username) {
-      dispatch(
-        createUser({
-          id: new Date().getTime(),
-          username: username,
-          email: email,
-          password: password, 
-        })
-      );
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      onCancel();
-    } else {
-      console.error("Неполные данные");
+      try {
+        const response = await axios.post<DataTypes>(
+          `https://jsonplaceholder.typicode.com/users`,
+          {
+            email: email,
+            password: password,
+            username: username,
+          }
+        );
+        setUsers((prevUsers) => [...prevUsers, response.data]);
+        console.log(response);
+        console.log(users);
+        setEmail("");
+        setPassword("");
+        setUsername("");
+      } catch (error: any) {
+        message.open({
+          type: "error",
+          content: "Неполные данные",
+        });
+      }
     }
-  }
+  };
 
   const handleCancel = () => {
     onCancel();
@@ -79,7 +87,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         footer={null}
         centered
       >
-        <Form>
+        <Form onFinish={handleRegister}>
           <Form.Item
             name="email"
             rules={[{ required: true, message: "Please input your email!" }]}
@@ -101,14 +109,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           <Form.Item>
             <div>
               Do you have an account?{" "}
-              <Link
-                href="#"
-                style={{ color: "red" }}
-              >
+              <Link href="#" style={{ color: "red" }}>
                 Login
               </Link>
             </div>
-            <StyledButton type="primary" htmlType="submit" onClick={handleRegister}>
+            <StyledButton type="primary" htmlType="submit">
               Register
             </StyledButton>
           </Form.Item>

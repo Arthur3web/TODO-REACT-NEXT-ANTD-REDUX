@@ -1,86 +1,81 @@
-import { Button, Input, Table, TableColumnsType } from "antd";
+import { Button, Input, Spin, Table, TableColumnsType } from "antd";
 import { CheckOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  editTodo,
-  removeTodo,
-  toggleStatusTodo,
-} from "@/redux/features/todo-slice";
-import { RootState } from "@/redux/store";
 import { useEffect, useState } from "react";
 import { JSONPlaceholder } from "@freepi/jsonplaceholder";
 import axios from "axios";
 
-interface DataTypes {
+export interface DataTypes {
+  id: string;
   key: string;
   title: string;
-  timeend: Date;
   completed: boolean;
+  userId: number;
 }
 
 const jsonPlaceHolder = new JSONPlaceholder();
 
 const CustomTable: React.FC = ({}) => {
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<DataTypes[]>([]);
-  const todoList = useSelector((state: RootState) => state.todo.taskList);
-  const dispatch = useDispatch();
   const [editingTask, setEditingTask] = useState<{
     id: string | null;
     title: string;
   }>({ id: null, title: "" });
+ 
 
-  useEffect(() => {
-    const fetchTasks = async () => {
+  const handleDeleteTask = async (id: string) => {
       try {
-        const response = await axios.get<DataTypes[]>("https://jsonplaceholder.typicode.com/todos");
-        setTasks(response.data);
-        setLoading(false);
+        await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
+        const updatedTasks = tasks.filter(task => task.id !== id);
+        setTasks(updatedTasks);
       } catch (error) {
-        setError("Failed to fetch tasks");
-        setLoading(false);
+        setError("Failed to delete task");
       }
-    };
-
-    fetchTasks();
-  }, []);
-
-  const tasklistData = (todoList: any[]) => {
-    return todoList.map((task) => ({
-      ...task,
-      key: task.id,
-    }));
   };
 
-
-  const handleDeleteTask = (id: string) => {
-    dispatch(removeTodo(id));
+  const toggleStatusTask = async (id: string) => {
+    try {
+      const taskToUpdate = tasks.find(task => task.id === id);
+      if (!taskToUpdate) {
+        setError("Task not found");
+        return;
+      }
+      const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
+      await axios.put(`https://jsonplaceholder.typicode.com/todos/${id}`, updatedTask);
+      const updatedTasks = tasks.map(task =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      );
+      setTasks(updatedTasks);
+    } catch (error) {
+      setError("Failed to update task");
+    }
   };
 
-  const toggleStatusTask = (id: string) => {
-    dispatch(toggleStatusTodo(id));
-  };
-
-  const handleEditTask = (record: DataTypes) => {
-    setEditingTask({ id: record.key, title: record.title });
+  const handleEditTask = (id: string) => {
+    const taskToEdit = tasks.find(task => task.id === id)
+    if (taskToEdit) {
+      setEditingTask({id, title: taskToEdit.title })
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditingTask({ ...editingTask, title: e.target.value });
   };
 
-  const handleSaveEdit = (id: string, title: string) => {
-    dispatch(
-      editTodo({
-        id: id,
-        newData: {
-          title: title,
-        },
-      })
-    );
-    setEditingTask({ id: null, title: "" });
-  };
+  const handleSaveEdit = async (id: string) => {
+      try {
+        await axios.put(`https://jsonplaceholder.typicode.com/todos/${id}`, {
+          title: editingTask.title
+        });
+        const updatedTasks = tasks.map(task =>
+          task.id === id ? { ...task, title: editingTask.title } : task
+        );
+        setTasks(updatedTasks);
+        setEditingTask({id: null, title: ""})
+      } catch (error) {
+        setError("Failed to update task");
+      }
+    };
 
   const columns: TableColumnsType<DataTypes> = [
     {
@@ -90,11 +85,11 @@ const CustomTable: React.FC = ({}) => {
       width: 160,
       ellipsis: true,
       render: (text: string, record: DataTypes) =>
-        record.key === editingTask.id ? (
+        record.id === editingTask.id ? (
           <Input
             value={editingTask.title}
             onChange={handleInputChange}
-            onPressEnter={() => handleSaveEdit(record.key, editingTask.title)}
+            onPressEnter={() => handleSaveEdit(record.id)}
           />
         ) : (
           <div
@@ -107,34 +102,6 @@ const CustomTable: React.FC = ({}) => {
           </div>
         ),
     },
-    // {
-    //   title: "End Time",
-    //   dataIndex: "timeend",
-    //   key: "timeend",
-    //   width: 90,
-    //   render: (timeend: Date, record: DataTypes) => timeend.toLocaleString(),
-    //   sorter: (a, b) =>
-    //     new Date(a.timeend).getTime() - new Date(b.timeend).getTime(),
-    //   sortDirections: ["descend", "ascend"],
-    //   filters: [
-    //     {
-    //       text: "Today",
-    //       value: "Today",
-    //     },
-    //     {
-    //       text: "All",
-    //       value: "All",
-    //     },
-    //   ],
-    //   onFilter: (value, record) => {
-    //     const currentDate = new Date();
-    //     const recordDate = new Date(record.timeend);
-    //     if (value === "Today") {
-    //       return recordDate.toDateString() === currentDate.toDateString();
-    //     }
-    //     return true;
-    //   },
-    // },
     {
       title: "Status",
       dataIndex: "completed",
@@ -142,7 +109,7 @@ const CustomTable: React.FC = ({}) => {
       render: (completed: boolean) => (
         <span>{completed ? "Completed" : "Not Completed"}</span>
       ),
-      width: 80,
+      width: 60,
       filters: [
         {
           text: "Completed",
@@ -169,34 +136,34 @@ const CustomTable: React.FC = ({}) => {
       render: (_, record) => (
         <>
           <Button
-            onClick={() => toggleStatusTask(record.key)}
+            onClick={() => toggleStatusTask(record.id)}
             style={{ fontSize: 10 }}
           >
             <CheckOutlined style={{ color: "purple" }} />
           </Button>
           <Button
-            onClick={() => handleEditTask(record)}
+            onClick={() => handleEditTask(record.id)}
             style={{ fontSize: 10 }}
           >
             <EditOutlined />
           </Button>
           <Button
-            onClick={() => handleDeleteTask(record.key)}
+            onClick={() => handleDeleteTask(record.id)}
             style={{ fontSize: 10 }}
           >
             <DeleteOutlined style={{ color: "red" }} />
           </Button>
         </>
       ),
-      width: 110,
+      width: 90,
     },
   ];
 
   return (
     <Table
       columns={columns}
-      // dataSource={tasklistData(todoList)}
       dataSource={tasks}
+      rowKey="id"
       pagination={{ pageSize: 3 }}
     />
   );
