@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import Link from "next/link";
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
 import RegistrationForm from "../RegistrationForm";
 import { useForm } from "antd/es/form/Form";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { login } from "@/redux/features/user-slice";
 
 interface LoginFormProps {
   visible: boolean;
@@ -49,12 +51,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
   onCancel,
 }) => {
   const [registrationModalVisible, setRegistrationModalVisible] = useState(false);
-
+  const dispatch = useDispatch();
+  
   const handleLogin = async (values: any) => {
     const { email, password } = values;
     try {
       const response = await axios.get(`https://jsonplaceholder.typicode.com/users?email=${email}`);
       const users = response.data;
+      dispatch(login(users));
       if (users.length === 0) {
         throw new Error('Пользователь не найден');
       }
@@ -64,7 +68,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           type: 'success',
           content: 'Успешный вход',
         });
-        // console.log('Успешный вход:', user);
+        console.log('Успешный вход:', user);
         localStorage.setItem('loggedInUser', JSON.stringify(user));
         localStorage.setItem('isLoggedIn', JSON.stringify(true));
         onCancel();

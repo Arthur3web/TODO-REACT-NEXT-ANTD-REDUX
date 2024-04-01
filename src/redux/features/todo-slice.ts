@@ -1,28 +1,18 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { thunk } from 'redux-thunk';
 
 type TodoType = {
   id: string;
   title: string;
-  timestart: Date;
-  timeend: Date;
   completed: boolean;
 };
 
-type UsersType = {
-  id: string;
-  email: string;
-  password: string;
-  username: string;
-}
-
 type TodoState = {
   taskList: TodoType[];
-  userList: UsersType[];
 };
 
 const initialState: TodoState = {
   taskList: [],
-  userList: [],
 };
 
 export const todo = createSlice({
@@ -50,11 +40,6 @@ export const todo = createSlice({
         state.taskList[todoIndex] = { ...state.taskList[todoIndex], ...newData };
       }
     },
-    createUser: (state, action) => {
-      state.userList.push(action.payload);
-      console.log(state);
-      console.log(action);
-    },
     fetchTodo: (state, action: PayloadAction<TodoType[]>) => {
       state.taskList = action.payload;
     },
@@ -62,5 +47,5 @@ export const todo = createSlice({
   },
 });
 
-export const { addTodo, removeTodo, toggleStatusTodo, editTodo, createUser, fetchTodo } = todo.actions;
+export const { addTodo, removeTodo, toggleStatusTodo, editTodo, fetchTodo } = todo.actions;
 export default todo.reducer;

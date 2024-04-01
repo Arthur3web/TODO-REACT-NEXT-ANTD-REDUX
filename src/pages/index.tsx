@@ -9,7 +9,6 @@ import {
   Menu,
   MenuProps,
   Popover,
-  Spin,
   Typography,
 } from "antd";
 import {
@@ -22,11 +21,12 @@ import {
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import AddTaskForm from "@/components/AddTaskForm";
-import CustomTable, { DataTypes } from "@/ui/CustomTable/CustomTable";
+import CustomTable from "@/ui/CustomTable/CustomTable";
 import LoginForm from "@/modules/LoginForm";
 import axios from "axios";
 import { fetchTodo } from "@/redux/features/todo-slice";
 import { useDispatch } from "react-redux";
+import { login, logout } from "@/redux/features/user-slice";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -97,77 +97,47 @@ export default function Home() {
   const [isClickAddTaskButton, setClickAddTaskButton] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [userData, setUserData] = useState("");
-  const [tasks, setTasks] = useState<DataTypes[]>([]);
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const isBrowser = typeof window !== "undefined"; // Проверяем, что код выполняется в браузерной среде
+  const [isLogin, setIsLogin] = useState<boolean>(
+    isBrowser && localStorage.getItem("isLoggedIn") === "true"
+  );
   const dispatch = useDispatch();
 
-  useEffect(() => { //для вывода имени пользователя
-    const userDataString = localStorage.getItem('loggedInUser');
+  useEffect(() => {
+    const userDataString = localStorage.getItem("loggedInUser");
     if (userDataString) {
       const parsedUserData = JSON.parse(userDataString);
       const { username } = parsedUserData;
       setUserData(username);
     }
-  }, []); 
+  }, [userData]);
 
-  useEffect(() => {
-    const loggedInUsers = localStorage.getItem('loggedInUser');
-    if (!loggedInUsers) {
-      return;
-    }
-    const loggedInUser = JSON.parse(loggedInUsers)
-
-    const isLogin = localStorage.getItem('isLoggedIn');
-
-    if (isLogin) {
-      const fetchTasks = async () => {
-        try {
-          const response = await axios.get<DataTypes[]>(`https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`);
-          setTasks(response.data);
-          // console.log(tasks);
-          dispatch(fetchTodo(response.data));
-          setLoading(false);
-        } catch (error) {
-          setError("Failed to fetch tasks");
-          setLoading(false);
-        }
-      };
-  
-      fetchTasks();
-    }
-    
-  }, [dispatch]);
-
-  // if (loading) {
-  //   return (
-  //   <Spin tip="Loading" size="large">
-  //     <div className="content"/>
-  //   </Spin>
-  //   )
-  // }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-  
-  
-  
-  const handleLogin = () => {;
+  const handleLogin = async () => {
     setIsModalVisible(true);
+    setIsLogin(true);
   };
 
   const handleLogout = () => {
     localStorage.clear();
+    dispatch(fetchTodo([]));
+    dispatch(logout());
+    setIsLogin(false);
+    setUserData("");
   };
 
-
-  const content = <>
-  <Button style={{ width: 150, height: 40, marginRight: 10 }} onClick={handleLogin}> Login</Button>
-  <Button style={{ width: 150, height: 40 }} onClick={handleLogout}>Exit</Button>
-  </>
+  const content = isLogin ? (
+    <Button style={{ width: 150, height: 40 }} onClick={handleLogout}>
+      Exit
+    </Button>
+  ) : (
+    <Button
+      style={{ width: 150, height: 40, marginRight: 10 }}
+      onClick={handleLogin}
+    >
+      Login
+    </Button>
+  );
   return (
     <>
       <main>
@@ -184,10 +154,11 @@ export default function Home() {
         >
           <Flex
             align="center"
+            // flex-direction="column"
             justify="space-between"
-            style={{ width: 1366, height: 1024 }}
+            // style={{ width: 1366, height: 1024 }}
           >
-            <Typography
+            {/* <Typography
               style={{
                 fontSize: "96px",
                 fontFamily: "Roboto",
@@ -196,7 +167,7 @@ export default function Home() {
               }}
             >
               TODO <span style={{ color: "#9333ea" }}>UI</span>
-            </Typography>
+            </Typography> */}
             <Flex>
               <Layout style={{ borderRadius: 10, background: "transparent" }}>
                 <Layout.Header
@@ -245,7 +216,7 @@ export default function Home() {
                       background: "white",
                     }}
                   >
-                    <CustomTable/>
+                    <CustomTable />
                     <Button
                       icon={
                         <PlusOutlined
@@ -277,8 +248,8 @@ export default function Home() {
         onCancel={() => setClickAddTaskButton(false)}
       />
       <LoginForm
-      visible={isModalVisible}
-      onCancel={() => setIsModalVisible(false)}
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
       />
     </>
   );

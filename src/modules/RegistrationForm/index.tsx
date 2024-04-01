@@ -3,10 +3,10 @@ import { Modal, Form, Input, Button, message } from "antd";
 import Link from "next/link";
 import styled from "styled-components";
 import LoginForm from "../LoginForm";
-import { createUser } from "@/redux/features/todo-slice";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { DataTypes } from "@/ui/CustomTable/CustomTable";
+import { createUser } from "@/redux/features/user-slice";
 
 interface RegistrationFormProps {
   visible: boolean;
@@ -42,7 +42,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string>("");
-  const [users, setUsers] = useState<DataTypes[]>([]);
+  // const [users, setUsers] = useState<DataTypes[]>([]);
+  const dispatch = useDispatch();
 
   const handleRegister = async () => {
     if (email && password && username) {
@@ -55,12 +56,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             username: username,
           }
         );
-        setUsers((prevUsers) => [...prevUsers, response.data]);
+        // setUsers((prevUsers) => [...prevUsers, response.data]);
         console.log(response);
-        console.log(users);
+        // console.log(users);
+        dispatch(createUser(response.data))
         setEmail("");
         setPassword("");
         setUsername("");
+        message.open({
+          type: "error",
+          content: "Пользователь зарегистрирован",
+        });
       } catch (error: any) {
         message.open({
           type: "error",
