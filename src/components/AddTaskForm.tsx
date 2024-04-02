@@ -11,14 +11,10 @@ interface AddTaskFormProps {
 }
 
 const AddTaskForm: React.FC<AddTaskFormProps> = ({ visible, onCancel }) => {
-  const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState<string>("");
   const [tasks, setTasks] = useState<DataTypes[]>([]);
   const dispatch = useDispatch();
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   const handleAddTask = async () => {
     const userDataString = localStorage.getItem("loggedInUser");
@@ -44,7 +40,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ visible, onCancel }) => {
         }
       );
       const newTask = response.data;
-      const newTaskId = newTask.id;
+      // const newTaskId = newTask.id;
       setTasks((prevTasks) => [...prevTasks, newTask]);
       onCancel();
       console.log(newTask);
@@ -57,7 +53,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ visible, onCancel }) => {
 
       dispatch(
         addTodo({
-          id: /*new Date().getTime()*/ newTaskId,
+          id: new Date().getTime() /*newTaskId*/,
           title: title,
           timestart: new Date().toISOString(),
           completed: false,

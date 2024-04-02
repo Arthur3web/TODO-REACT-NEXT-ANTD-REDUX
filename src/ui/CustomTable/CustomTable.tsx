@@ -86,6 +86,10 @@ const CustomTable: React.FC = ({}) => {
     );
   }
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+  
   const handleDeleteTask = async (id: string) => {
     try {
       await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);

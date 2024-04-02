@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { thunk } from 'redux-thunk';
 
 type TodoType = {
@@ -9,16 +9,26 @@ type TodoType = {
 
 type TodoState = {
   taskList: TodoType[];
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
 };
 
+export const fetchPosts = createAsyncThunk( //выполняет асинхронный запрос к API для получения списка постов.
+  'todo/fetchPosts',
+  async () => {
+    const response = await fetch('https://api.example.com/posts');
+    const data = await response.json();
+    return data;
+  }
+);
 const initialState: TodoState = {
   taskList: [],
+  status: 'idle',
 };
 
 export const todo = createSlice({
   name: 'todo',
   initialState,
-  reducers: {
+  reducers: { //редукторы для управления состоянием списка задач.
     addTodo: (state, action) => {
       state.taskList.push(action.payload);
       console.log(state);
@@ -43,7 +53,19 @@ export const todo = createSlice({
     fetchTodo: (state, action: PayloadAction<TodoType[]>) => {
       state.taskList = action.payload;
     },
-    
+  },
+  extraReducers(builder) { //дополнительные редукторы для обработки асинхронных событий, таких как начало загрузки, успешное завершение загрузки и ошибки загрузки.
+    builder
+      .addCase(fetchPosts.pending, (state, action) => {
+        state.status = 'loading'
+      })
+      .addCase(fetchPosts.fulfilled, (state, action) => {
+        state.status = 'succeeded'
+        state.taskList = action.payload;
+      })
+      .addCase(fetchPosts.rejected, (state, action) => {
+        state.status = 'failed';
+      });
   },
 });
 
