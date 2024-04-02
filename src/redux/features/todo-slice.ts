@@ -1,5 +1,6 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { message } from "antd";
+import axios from "axios";
 import { thunk } from "redux-thunk";
 
 type TodoType = {
@@ -15,25 +16,37 @@ type TodoState = {
   error: string | null;
 };
 
+// export const fetchPosts = createAsyncThunk(  //выполняет асинхронный запрос к API для получения списка постов.
+//   "todo/fetchPosts",
+//   async () => {
+//     try {
+//       const loggedInUsers = localStorage.getItem("loggedInUser");
+//       if (!loggedInUsers) {
+//         return;
+//       }
+//       const loggedInUser = JSON.parse(loggedInUsers);
+//       const response = await fetch(
+//         `https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`
+//       );
+//       if (!response.ok) {
+//         throw new Error("Невозможно получить список задач пользователя");
+//       }
+//       const data = await response.json();
+//       return data;
+//     } catch (error) {
+//       throw new Error("Failed to initialize user data");
+//     }
+//   }
+// );
+
 export const fetchPosts = createAsyncThunk(  //выполняет асинхронный запрос к API для получения списка постов.
   "todo/fetchPosts",
-  async () => {
+  async (userId: number) => {
     try {
-      const loggedInUsers = localStorage.getItem("loggedInUser");
-      if (!loggedInUsers) {
-        return;
-      }
-      const loggedInUser = JSON.parse(loggedInUsers);
-      const response = await fetch(
-        `https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`
-      );
-      if (!response.ok) {
-        throw new Error("Невозможно получить список задач пользователя");
-      }
-      const data = await response.json();
-      return data;
+      const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${userId}/tasks`);
+      return response.data;
     } catch (error) {
-      throw new Error("Failed to initialize user data");
+      throw new Error('Failed to fetch user tasks');
     }
   }
 );

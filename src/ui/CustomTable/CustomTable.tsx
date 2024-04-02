@@ -184,7 +184,7 @@ const CustomTable: React.FC = ({}) => {
           <Input
             value={editingTask.title}
             onChange={handleInputChange}
-            onPressEnter={() => handleSaveEdit(record.id)}
+            onPressEnter={() => handleSaveEdit(record.key)}
           />
         ) : (
           <div

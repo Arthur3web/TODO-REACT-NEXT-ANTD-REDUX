@@ -1,21 +1,17 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { message } from "antd";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-
-export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
-export const FETCH_TASKS_SUCCESS = 'FETCH_TASKS_SUCCESS';
 
 type UserType = {
   id: string;
   email: string;
-  password: string;
+  phone: string;
   username: string;
 };
 
 type UserState = {
   userList: UserType[];
-  loggedInUser: null,
+  loggedInUser: UserType | null,
   error: string | null;
   status: "idle" | "loading" | "succeeded" | "failed";
 };
@@ -30,13 +26,13 @@ const initialState: UserState = {
 export const loginUser = createAsyncThunk(
   'user/login',
   async ({ email, password }: { email: string, password: string }) => {
-    const response = await axios.get(`https://jsonplaceholder.typicode.com/users?email=${email}`);
+    const response = await axios.get<UserType[]>(`https://jsonplaceholder.typicode.com/users?email=${email}`);
     const users = response.data;
     if (users.length === 0) {
       throw new Error('Пользователь не найден');
     }
     const user = users[0];
-    if (user.email === email && user.password === password) {
+    if (user.email === email && user.phone === password) {
       localStorage.setItem('loggedInUser', JSON.stringify(user));
       localStorage.setItem('isLoggedIn', JSON.stringify(true));
       return user;
@@ -46,15 +42,6 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// export const fetchUserTasks = createAsyncThunk(
-//   'user/fetchUserTasks',
-//   async (userId: number) => {
-//     const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${userId}/tasks`);
-//     return response.data;
-//   }
-// );
-
-//затем необходимо обработать этот thunk в редукторах
 export const users = createSlice({
   name: "user",
   initialState,
@@ -85,17 +72,6 @@ export const users = createSlice({
         state.status = "failed";
         // state.error = action.error.message;
       })
-      // .addCase(fetchUserTasks.pending, (state) => {
-      //   state.status = "loading";
-      // })
-      // .addCase(fetchUserTasks.fulfilled, (state, action) => {
-      //   state.status = "succeeded";
-      //   // Обновите состояние с задачами пользователя
-      // })
-      // .addCase(fetchUserTasks.rejected, (state, action) => {
-      //   state.status = "failed";
-      //   // state.error = action.error.message;
-      // });
   },
 });
 
