@@ -1,4 +1,4 @@
-import { Button, Input, Spin, Table, TableColumnsType } from "antd";
+import { Button, Input, Spin, Table, TableColumnsType, message } from "antd";
 import { CheckOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { JSONPlaceholder } from "@freepi/jsonplaceholder";
@@ -6,6 +6,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import {
   editTodo,
+  fetchPosts,
   fetchTodo,
   removeTodo,
   toggleStatusTodo,
@@ -26,10 +27,10 @@ export interface DataTypes {
 const jsonPlaceHolder = new JSONPlaceholder();
 
 const CustomTable: React.FC = ({}) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const [error, setError] = useState<string | null>(null);
-  const [tasks, setTasks] = useState<DataTypes[]>([]);
-  const todoList = useSelector((state: RootState) => state.todo.taskList);
+  // const [tasks, setTasks] = useState<DataTypes[]>([]);
+  const todoList = useSelector((state: RootState) => state.todo.taskList); //используем todoList из ReduxStore, поэтому локальное состояние для tasks можно не использовать
   const [editingTask, setEditingTask] = useState<{
     id: string | null;
     title: string;
@@ -52,7 +53,7 @@ const CustomTable: React.FC = ({}) => {
     }
     const loggedInUser = JSON.parse(loggedInUsers);
 
-    const isLogin = localStorage.getItem("isLoggedIn");
+    // const isLogin = localStorage.getItem("isLoggedIn");
 
     if (isLogin) {
       const fetchTasks = async () => {
@@ -61,20 +62,25 @@ const CustomTable: React.FC = ({}) => {
           const response = await axios.get<DataTypes[]>(
             `https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`
           );
-          setTasks(response.data);
-          // console.log(tasks);
+      //     // console.log(tasks);
           dispatch(fetchTodo(response.data));
-          setLoading(false);
+          // dispatch(fetchTasks());
+      //     // setLoading(false);
         } catch (error) {
-          setError("Failed to fetch tasks");
+          message.open({
+            type: "error",
+            content: "Failed to fetch tasks",
+          });
         } finally {
           setLoading(false);
         }
       };
 
+      // fetchTasks();
       fetchTasks();
-    } 
-  }, [isLogin]);
+      dispatch(fetchPosts());
+    }
+  }, [isLogin, dispatch]);
 
   if (loading) {
     return (
@@ -89,35 +95,41 @@ const CustomTable: React.FC = ({}) => {
   if (error) {
     return <div>Error: {error}</div>;
   }
-  
+
   const handleDeleteTask = async (id: string) => {
     try {
       await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
-      const updatedTasks = tasks.filter(task => task.id !== id);
-      setTasks(updatedTasks);
       dispatch(removeTodo(id));
     } catch (error) {
-      setError("Failed to delete task");
+      message.open({
+        type: "error",
+        content: "Failed to delete task",
+      });
     }
   };
 
   const toggleStatusTask = async (id: string) => {
     try {
-      const taskToUpdate = tasks.find(task => task.id === id);
+      const taskToUpdate = todoList.find((task) => task.id === id);
       if (!taskToUpdate) {
         setError("Task not found");
         return;
       }
-      const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
-      await axios.put(`https://jsonplaceholder.typicode.com/todos/${id}`, updatedTask);
-      const updatedTasks = tasks.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+      const updatedTask = {
+        ...taskToUpdate,
+        completed: !taskToUpdate.completed,
+      };
+      await axios.put(
+        `https://jsonplaceholder.typicode.com/todos/${id}`,
+        updatedTask
       );
-      setTasks(updatedTasks);
+      dispatch(toggleStatusTodo(id));
     } catch (error) {
-      setError("Failed to update task");
+      message.open({
+        type: "error",
+        content: "Failed to update task",
+      });
     }
-    dispatch(toggleStatusTodo(id));
   };
 
   const handleEditTask = (/*id: string*/ record: DataTypes) => {
@@ -147,10 +159,16 @@ const CustomTable: React.FC = ({}) => {
         );
         setEditingTask({ id: null, title: "" });
       } else {
-        setError("Failed to update task");
+        message.open({
+          type: "error",
+          content: "Failed to update task",
+        });
       }
     } catch (error) {
-      setError("Failed to update task");
+      message.open({
+        type: "error",
+        content: "Failed to update task",
+      });
     }
   };
 

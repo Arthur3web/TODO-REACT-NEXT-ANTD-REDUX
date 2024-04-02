@@ -46,45 +46,57 @@ const initialValues: IInitialValues = {
   password: "",
 };
 
-const LoginForm: React.FC<LoginFormProps> = ({
-  visible,
-  onCancel,
-}) => {
-  const [registrationModalVisible, setRegistrationModalVisible] = useState(false);
+const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
+  const [registrationModalVisible, setRegistrationModalVisible] =
+    useState(false);
   const dispatch = useDispatch();
-  
+
+  // const handleLogin = async (values: any) => {
+  //   const { email, password } = values;
+  //   try {
+  //     const response = await axios.get(`https://jsonplaceholder.typicode.com/users?email=${email}`);
+  //     const users = response.data;
+  //     dispatch(login(users));
+  //     if (users.length === 0) {
+  //       throw new Error('Пользователь не найден');
+  //     }
+  //     const user = users[0];
+  //     if (user.email === email && user.phone === password) {
+  //       message.open({
+  //         type: 'success',
+  //         content: 'Успешный вход',
+  //       });
+  //       console.log('Успешный вход:', user);
+  //       localStorage.setItem('loggedInUser', JSON.stringify(user));
+  //       localStorage.setItem('isLoggedIn', JSON.stringify(true));
+  //       onCancel();
+  //       return user;
+  //     } else {
+  //       throw new Error('Неправильное имя пользователя или пароль');
+  //     }
+  //   } catch (error: any) {
+  //     message.open({
+  //       type: 'error',
+  //       content: error.message,
+  //     });
+  //     console.error('Ошибка входа:', error.message);
+  //   }
+  // };
+
+
   const handleLogin = async (values: any) => {
     const { email, password } = values;
     try {
-      const response = await axios.get(`https://jsonplaceholder.typicode.com/users?email=${email}`);
-      const users = response.data;
-      dispatch(login(users));
-      if (users.length === 0) {
-        throw new Error('Пользователь не найден');
-      }
-      const user = users[0];
-      if (user.email === email && user.phone === password) {
-        message.open({
-          type: 'success',
-          content: 'Успешный вход',
-        });
-        console.log('Успешный вход:', user);
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
-        localStorage.setItem('isLoggedIn', JSON.stringify(true));
-        onCancel();
-        return user;
-      } else {
-        throw new Error('Неправильное имя пользователя или пароль');
-      }
-    } catch (error: any) {
+      await dispatch(login({ email, password }));
+      onCancel();
+    } catch (error) {
       message.open({
-        type: 'error',
-        content: error.message,
+        type: "error",
+        content: /*error.message*/ "ERROR",
       });
-      console.error('Ошибка входа:', error.message);
     }
   };
-
+  
   const handleCloseModal = () => {
     onCancel();
   };

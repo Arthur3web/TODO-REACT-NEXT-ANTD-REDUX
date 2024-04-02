@@ -26,7 +26,7 @@ import LoginForm from "@/modules/LoginForm";
 import axios from "axios";
 import { fetchTodo } from "@/redux/features/todo-slice";
 import { useDispatch } from "react-redux";
-import { login, logout } from "@/redux/features/user-slice";
+import { /*login,*/ logout } from "@/redux/features/user-slice";
 
 const inter = Inter({ subsets: ["latin"] });
 

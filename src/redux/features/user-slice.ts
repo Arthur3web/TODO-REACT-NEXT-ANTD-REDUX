@@ -1,5 +1,10 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { thunk } from "redux-thunk";
+import { message } from "antd";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const FETCH_TASKS_SUCCESS = 'FETCH_TASKS_SUCCESS';
 
 type UserType = {
   id: string;
@@ -11,20 +16,44 @@ type UserType = {
 type UserState = {
   userList: UserType[];
   loggedInUser: null,
+  error: string | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
 };
 
 const initialState: UserState = {
   userList: [],
   loggedInUser: null,
+  error: null,
+  status: "idle",
 };
 
-// const fetchUserById = createAsyncThunk( //сначала создаем thunk
-//   'users/fetchByIdStatus',
-//   async (userId, thunkAPI) => {
-//     const response = await userAPI.fetchById(userId); //должен для начала получить userAPI
+export const loginUser = createAsyncThunk(
+  'user/login',
+  async ({ email, password }: { email: string, password: string }) => {
+    const response = await axios.get(`https://jsonplaceholder.typicode.com/users?email=${email}`);
+    const users = response.data;
+    if (users.length === 0) {
+      throw new Error('Пользователь не найден');
+    }
+    const user = users[0];
+    if (user.email === email && user.password === password) {
+      localStorage.setItem('loggedInUser', JSON.stringify(user));
+      localStorage.setItem('isLoggedIn', JSON.stringify(true));
+      return user;
+    } else {
+      throw new Error('Неправильное имя пользователя или пароль');
+    }
+  }
+);
+
+// export const fetchUserTasks = createAsyncThunk(
+//   'user/fetchUserTasks',
+//   async (userId: number) => {
+//     const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${userId}/tasks`);
 //     return response.data;
 //   }
-// )
+// );
+
 //затем необходимо обработать этот thunk в редукторах
 export const users = createSlice({
   name: "user",
@@ -42,10 +71,33 @@ export const users = createSlice({
       console.log(action);
     },
   },
+  // reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.loggedInUser = action.payload;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.status = "failed";
+        // state.error = action.error.message;
+      })
+      // .addCase(fetchUserTasks.pending, (state) => {
+      //   state.status = "loading";
+      // })
+      // .addCase(fetchUserTasks.fulfilled, (state, action) => {
+      //   state.status = "succeeded";
+      //   // Обновите состояние с задачами пользователя
+      // })
+      // .addCase(fetchUserTasks.rejected, (state, action) => {
+      //   state.status = "failed";
+      //   // state.error = action.error.message;
+      // });
+  },
 });
 
 export const { login, logout, createUser } = users.actions;
-// export const selectLoggedInUser = (state: { user: { loggedInUser: any } }) =>
-//   state.user.loggedInUser;
-
 export default users.reducer;
