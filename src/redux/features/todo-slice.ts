@@ -1,7 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { message } from "antd";
-import axios from "axios";
-import { thunk } from "redux-thunk";
 
 type TodoType = {
   id: string;
@@ -16,37 +14,26 @@ type TodoState = {
   error: string | null;
 };
 
-// export const fetchPosts = createAsyncThunk(  //выполняет асинхронный запрос к API для получения списка постов.
-//   "todo/fetchPosts",
-//   async () => {
-//     try {
-//       const loggedInUsers = localStorage.getItem("loggedInUser");
-//       if (!loggedInUsers) {
-//         return;
-//       }
-//       const loggedInUser = JSON.parse(loggedInUsers);
-//       const response = await fetch(
-//         `https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`
-//       );
-//       if (!response.ok) {
-//         throw new Error("Невозможно получить список задач пользователя");
-//       }
-//       const data = await response.json();
-//       return data;
-//     } catch (error) {
-//       throw new Error("Failed to initialize user data");
-//     }
-//   }
-// );
-
-export const fetchPosts = createAsyncThunk(  //выполняет асинхронный запрос к API для получения списка постов.
+export const fetchPosts = createAsyncThunk(
+  //выполняет асинхронный запрос к API для получения списка постов.
   "todo/fetchPosts",
-  async (userId: number) => {
+  async () => {
     try {
-      const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${userId}/tasks`);
-      return response.data;
+      const loggedInUsers = localStorage.getItem("loggedInUser");
+      if (!loggedInUsers) {
+        return;
+      }
+      const loggedInUser = JSON.parse(loggedInUsers);
+      const response = await fetch(
+        `https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`
+      );
+      if (!response.ok) {
+        throw new Error("Невозможно получить список задач пользователя");
+      }
+      const data = await response.json();
+      return data;
     } catch (error) {
-      throw new Error('Failed to fetch user tasks');
+      throw new Error("Failed to initialize user data");
     }
   }
 );
@@ -65,8 +52,8 @@ export const todo = createSlice({
     //редукторы для управления состоянием списка задач.
     addTodo: (state, action) => {
       state.taskList.push(action.payload);
-      console.log(state);
-      console.log(action);
+      // console.log(state);
+      // console.log(action);
     },
     removeTodo: (state, action: PayloadAction<string>) => {
       state.taskList = state.taskList.filter(
@@ -101,18 +88,14 @@ export const todo = createSlice({
     builder
       .addCase(fetchPosts.pending, (state, action) => {
         state.status = "loading";
-        // state.loading = true;
-        // state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.taskList = action.payload;
-      //   // state.loading = false;
       })
       .addCase(fetchPosts.rejected, (state, action) => {
         state.status = "failed";
-        // state.loading = false;
-        state.error = action.error.message ?? 'Failed to fetch tasks';
+        state.error = action.error.message ?? "Failed to fetch tasks";
         message.error(state.error);
       });
   },

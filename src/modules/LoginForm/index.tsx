@@ -3,10 +3,9 @@ import { Modal, Form, Input, Button, message } from "antd";
 import Link from "next/link";
 import styled from "styled-components";
 import RegistrationForm from "../RegistrationForm";
-import { useForm } from "antd/es/form/Form";
-import axios from "axios";
+// import { useForm } from "antd/es/form/Form";
 import { useDispatch } from "react-redux";
-import { login, loginUser } from "@/redux/features/user-slice";
+import { loginUser } from "@/redux/features/user-slice";
 import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "@/redux/store";
 import { AnyAction } from "@reduxjs/toolkit";
@@ -14,6 +13,7 @@ import { AnyAction } from "@reduxjs/toolkit";
 interface LoginFormProps {
   visible: boolean;
   onCancel: () => void;
+  onSuccessLogin: () => void;
 }
 
 const StyledButton = styled(Button)`
@@ -49,23 +49,29 @@ const initialValues: IInitialValues = {
   password: "",
 };
 
-const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel, onSuccessLogin }) => {
   const [registrationModalVisible, setRegistrationModalVisible] =
     useState(false);
     const dispatch: ThunkDispatch<RootState, any, AnyAction> = useDispatch();
 
-  const handleLogin = async (values: any) => {
+  const handleLogin = async (values: { email: string; password: string }) => {
+    
     const { email, password } = values;
+
     try {
-      await dispatch(loginUser({ email, password }));
-      message.success("Успешный вход");
-      localStorage.setItem("isLoggedIn", JSON.stringify(true));
-      onCancel();
+      const action = await dispatch(loginUser({ email, password }));
+      const user = action.payload;
+      // onSuccessLogin();
+      if (user){
+        onSuccessLogin();
+        onCancel();
+      }
     } catch (error: any) {
       message.error(error.message);
+      console.error('Ошибка входа:', error.message);
     }
   };
-  
+
   const handleCloseModal = () => {
     onCancel();
   };
@@ -118,7 +124,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel }) => {
             </div>
             <StyledButton
               type="primary"
-              htmlType="submit" /*loading={loading}*/
+              htmlType="submit"
             >
               Login
             </StyledButton>

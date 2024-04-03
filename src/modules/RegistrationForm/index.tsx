@@ -6,7 +6,7 @@ import LoginForm from "../LoginForm";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { DataTypes } from "@/ui/CustomTable/CustomTable";
-import { createUser } from "@/redux/features/user-slice";
+// import { createUser } from "@/redux/features/user-slice";
 
 interface RegistrationFormProps {
   visible: boolean;
@@ -43,7 +43,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string>("");
   // const [users, setUsers] = useState<DataTypes[]>([]);
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const handleRegister = async () => {
     if (email && password && username) {
@@ -59,7 +59,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         // setUsers((prevUsers) => [...prevUsers, response.data]);
         console.log(response);
         // console.log(users);
-        dispatch(createUser(response.data))
+        // dispatch(createUser(response.data))
         setEmail("");
         setPassword("");
         setUsername("");

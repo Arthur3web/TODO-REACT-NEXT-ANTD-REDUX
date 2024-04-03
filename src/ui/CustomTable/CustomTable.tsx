@@ -22,6 +22,7 @@ export interface DataTypes {
   email: string;
   password: string;
   username: string;
+  phone: string;
 }
 
 const jsonPlaceHolder = new JSONPlaceholder();
@@ -35,7 +36,7 @@ const CustomTable: React.FC = ({}) => {
     id: string | null;
     title: string;
   }>({ id: null, title: "" });
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const isBrowser = typeof window !== "undefined";
   const isLogin = isBrowser && localStorage.getItem("isLoggedIn") === "true";
 
@@ -53,8 +54,6 @@ const CustomTable: React.FC = ({}) => {
     }
     const loggedInUser = JSON.parse(loggedInUsers);
 
-    // const isLogin = localStorage.getItem("isLoggedIn");
-
     if (isLogin) {
       const fetchTasks = async () => {
         setLoading(true);
@@ -62,10 +61,9 @@ const CustomTable: React.FC = ({}) => {
           const response = await axios.get<DataTypes[]>(
             `https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`
           );
-      //     // console.log(tasks);
+          //     // console.log(tasks);
           dispatch(fetchTodo(response.data));
-          // dispatch(fetchTasks());
-      //     // setLoading(false);
+          //     // setLoading(false);
         } catch (error) {
           message.open({
             type: "error",
@@ -76,7 +74,6 @@ const CustomTable: React.FC = ({}) => {
         }
       };
 
-      // fetchTasks();
       fetchTasks();
       dispatch(fetchPosts());
     }

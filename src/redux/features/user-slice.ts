@@ -7,37 +7,53 @@ type UserType = {
   email: string;
   phone: string;
   username: string;
+  password: string;
 };
 
 type UserState = {
-  userList: UserType[];
-  loggedInUser: UserType | null,
+  // userList: UserType[];
+  loggedInUser: UserType | null;
   error: string | null;
   status: "idle" | "loading" | "succeeded" | "failed";
 };
 
 const initialState: UserState = {
-  userList: [],
+  // userList: [],
   loggedInUser: null,
   error: null,
   status: "idle",
 };
 
 export const loginUser = createAsyncThunk(
-  'user/login',
-  async ({ email, password }: { email: string, password: string }) => {
-    const response = await axios.get<UserType[]>(`https://jsonplaceholder.typicode.com/users?email=${email}`);
-    const users = response.data;
-    if (users.length === 0) {
-      throw new Error('Пользователь не найден');
-    }
-    const user = users[0];
-    if (user.email === email && user.phone === password) {
-      localStorage.setItem('loggedInUser', JSON.stringify(user));
-      localStorage.setItem('isLoggedIn', JSON.stringify(true));
-      return user;
-    } else {
-      throw new Error('Неправильное имя пользователя или пароль');
+  "user/login",
+  async ({ email, password }: { email: string; password: string }) => {
+    try {
+      const response = await axios.get<UserType[]>(
+        `https://jsonplaceholder.typicode.com/users?email=${email}`
+      );
+      const users = response.data;
+      if (users.length === 0) {
+        throw new Error("Пользователь не найден");
+      }
+      const user = users[0];
+      if (user.email === email && user.phone === password) {
+        message.open({
+          type: "success",
+          content: "Успешный вход",
+        });
+        localStorage.setItem("loggedInUser", JSON.stringify(user));
+        localStorage.setItem("isLoggedIn", JSON.stringify(true));
+        return user;
+      } else {
+        throw new Error("Неправильное имя пользователя или пароль");
+      }
+    } catch (error: any) {
+      message.open({
+        type: "error",
+        content: error.message,
+      });
+      console.error("Ошибка входа:", error.message);
+      throw error;
     }
   }
 );
@@ -46,19 +62,17 @@ export const users = createSlice({
   name: "user",
   initialState,
   reducers: {
-    login: (state, action) => {
-      state.loggedInUser = action.payload;
-    },
     logout: (state) => {
       state.loggedInUser = null;
+      state.status = "idle";
+      state.error = null;
     },
-    createUser: (state, action: PayloadAction<UserType>) => {
-      state.userList.push(action.payload);
-      console.log(state);
-      console.log(action);
-    },
+    // createUser: (state, action: PayloadAction<UserType>) => {
+    //   state.userList.push(action.payload);
+    //   console.log(state);
+    //   console.log(action);
+    // },
   },
-  // reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
@@ -66,14 +80,14 @@ export const users = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.loggedInUser = action.payload;
+        state.loggedInUser = action.payload || null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
-        // state.error = action.error.message;
-      })
+        state.error = action.error.message || "Не удалось выполнить вход";
+      });
   },
 });
 
-export const { login, logout, createUser } = users.actions;
+export const { logout/*, createUser*/ } = users.actions;
 export default users.reducer;

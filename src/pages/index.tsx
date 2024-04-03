@@ -26,7 +26,7 @@ import LoginForm from "@/modules/LoginForm";
 import axios from "axios";
 import { fetchTodo } from "@/redux/features/todo-slice";
 import { useDispatch } from "react-redux";
-import { /*login,*/ logout } from "@/redux/features/user-slice";
+import { logout } from "@/redux/features/user-slice";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -113,9 +113,13 @@ export default function Home() {
     }
   }, [userData]);
 
+  const handleSuccessfulLogin = () => {
+    setIsLogin(true);
+  };
+
   const handleLogin = async () => {
     setIsModalVisible(true);
-    setIsLogin(true);
+    // setIsLogin(true);
   };
 
   const handleLogout = () => {
@@ -187,7 +191,7 @@ export default function Home() {
                     <Popover
                       content={content}
                       title="Welcome, user!"
-                      trigger="click"
+                      // trigger="click"
                       placement="bottomRight"
                     >
                       <Badge dot>
@@ -250,6 +254,7 @@ export default function Home() {
       <LoginForm
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
+        onSuccessLogin={handleSuccessfulLogin}
       />
     </>
   );
