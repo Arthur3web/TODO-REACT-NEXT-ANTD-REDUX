@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import Link from "next/link";
 import styled from "styled-components";
+import RegistrationForm from "../RegistrationForm";
 // import { useForm } from "antd/es/form/Form";
 import { useDispatch } from "react-redux";
-import { loginUser } from "@/redux/features/userSlice/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "@/redux/store";
 import { AnyAction } from "@reduxjs/toolkit";
-import RegistrationForm from "@/forms/RegistrationForm";
+import { loginUser } from "@/redux/features/userSlice/actions";
 
 interface LoginFormProps {
   visible: boolean;
@@ -55,10 +55,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ visible, onCancel, onSuccessLogin
     const dispatch: ThunkDispatch<RootState, any, AnyAction> = useDispatch();
 
   const handleLogin = async (values: { email: string; password: string }) => {
+    
     const { email, password } = values;
+
     try {
       const action = await dispatch(loginUser({ email, password }));
       const user = action.payload;
+      // onSuccessLogin();
       if (user){
         onSuccessLogin();
         onCancel();

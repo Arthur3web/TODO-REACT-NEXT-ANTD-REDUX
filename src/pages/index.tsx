@@ -20,13 +20,14 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import AddTaskForm from "@/components/AddTaskForm";
+import AddTaskForm from "@/forms/AddTaskForm/AddTaskForm";
 import CustomTable from "@/ui/CustomTable/CustomTable";
-import LoginForm from "@/modules/LoginForm";
+import LoginForm from "@/forms/LoginForm";
 import axios from "axios";
-import { fetchTodo } from "@/redux/features/todo-slice";
+// import { fetchTodo } from "@/redux/features/todoSlice/todo-slice";
 import { useDispatch } from "react-redux";
-import { logout } from "@/redux/features/user-slice";
+import { logout } from "@/redux/features/userSlice/user-slice";
+import { resetTodo } from "@/redux/features/todoSlice/todo-slice";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -124,7 +125,8 @@ export default function Home() {
 
   const handleLogout = () => {
     localStorage.clear();
-    dispatch(fetchTodo([]));
+    // dispatch(fetchTodo([]));
+    dispatch(resetTodo());
     dispatch(logout());
     setIsLogin(false);
     setUserData("");
@@ -237,6 +239,7 @@ export default function Home() {
                         border: "1px solid gray",
                       }}
                       onClick={() => setClickAddTaskButton(true)}
+                      disabled={!isLogin}
                     >
                       Add Task
                     </Button>

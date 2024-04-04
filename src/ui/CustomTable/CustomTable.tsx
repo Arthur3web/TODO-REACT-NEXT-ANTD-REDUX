@@ -1,16 +1,10 @@
 import { Button, Input, Spin, Table, TableColumnsType, message } from "antd";
 import { CheckOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { JSONPlaceholder } from "@freepi/jsonplaceholder";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  editTodo,
-  fetchPosts,
-  fetchTodo,
-  removeTodo,
-  toggleStatusTodo,
-} from "@/redux/features/todo-slice";
+import React from "react";
+import { fetchTasks } from "@/redux/features/todoSlice/actions";
 import { RootState } from "@/redux/store";
 
 export interface DataTypes {
@@ -25,59 +19,30 @@ export interface DataTypes {
   phone: string;
 }
 
-const jsonPlaceHolder = new JSONPlaceholder();
-
 const CustomTable: React.FC = ({}) => {
   const dispatch = useDispatch<any>();
-  const [error, setError] = useState<string | null>(null);
-  // const [tasks, setTasks] = useState<DataTypes[]>([]);
   const todoList = useSelector((state: RootState) => state.todo.taskList); //используем todoList из ReduxStore, поэтому локальное состояние для tasks можно не использовать
+  const todoState = useSelector((state: RootState) => state.todo);
+  console.log("Current todo state:", todoState); 
   const [editingTask, setEditingTask] = useState<{
     id: string | null;
     title: string;
   }>({ id: null, title: "" });
-  const [loading, setLoading] = useState<boolean>(false);
   const isBrowser = typeof window !== "undefined";
   const isLogin = isBrowser && localStorage.getItem("isLoggedIn") === "true";
-
-  const tasklistData = (todoList: any[]) => {
-    return todoList.map((task) => ({
-      ...task,
-      key: task.id,
-    }));
-  };
 
   useEffect(() => {
     const loggedInUsers = localStorage.getItem("loggedInUser");
     if (!loggedInUsers) {
       return;
     }
-    const loggedInUser = JSON.parse(loggedInUsers);
-
     if (isLogin) {
-      const fetchTasks = async () => {
-        setLoading(true);
-        try {
-          const response = await axios.get<DataTypes[]>(
-            `https://jsonplaceholder.typicode.com/todos?userId=${loggedInUser.id}`
-          );
-          //     // console.log(tasks);
-          dispatch(fetchTodo(response.data));
-          //     // setLoading(false);
-        } catch (error) {
-          message.open({
-            type: "error",
-            content: "Failed to fetch tasks",
-          });
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchTasks();
-      dispatch(fetchPosts());
+      dispatch(fetchTasks());
     }
-  }, [isLogin, dispatch]);
+  }, [isLogin]);
+
+  const loading = useSelector((state: RootState) => state.todo.status === "loading");
+  const error = useSelector((state: RootState) => state.todo.error);
 
   if (loading) {
     return (
@@ -93,80 +58,26 @@ const CustomTable: React.FC = ({}) => {
     return <div>Error: {error}</div>;
   }
 
-  const handleDeleteTask = async (id: string) => {
-    try {
-      await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
-      dispatch(removeTodo(id));
-    } catch (error) {
-      message.open({
-        type: "error",
-        content: "Failed to delete task",
-      });
-    }
-  };
-
-  const toggleStatusTask = async (id: string) => {
-    try {
-      const taskToUpdate = todoList.find((task) => task.id === id);
-      if (!taskToUpdate) {
-        setError("Task not found");
-        return;
-      }
-      const updatedTask = {
-        ...taskToUpdate,
-        completed: !taskToUpdate.completed,
-      };
-      await axios.put(
-        `https://jsonplaceholder.typicode.com/todos/${id}`,
-        updatedTask
-      );
-      dispatch(toggleStatusTodo(id));
-    } catch (error) {
-      message.open({
-        type: "error",
-        content: "Failed to update task",
-      });
-    }
-  };
-
-  const handleEditTask = (/*id: string*/ record: DataTypes) => {
-    setEditingTask({ id: record.key, title: record.title });
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditingTask({ ...editingTask, title: e.target.value });
-  };
-
-  const handleSaveEdit = async (id: string) => {
-    try {
-      const response = await axios.put(
-        `https://jsonplaceholder.typicode.com/todos/${id}`,
-        {
-          title: editingTask.title,
+  const toggleStatusTaskAndHandleError = (id: string) => {
+    return async (dispatch: any) => {
+      try {
+        const taskToUpdate = todoList.find((task) => task.id === id);
+        if (!taskToUpdate) {
+          throw new Error("Task not found");
         }
-      );
-      if (response.status === 200) {
-        dispatch(
-          editTodo({
-            id: id,
-            newData: {
-              title: editingTask.title,
-            },
-          })
+        const updatedTask = {
+          ...taskToUpdate,
+          completed: !taskToUpdate.completed,
+        };
+        await axios.put(
+          `https://jsonplaceholder.typicode.com/todos/${id}`,
+          updatedTask
         );
-        setEditingTask({ id: null, title: "" });
-      } else {
-        message.open({
-          type: "error",
-          content: "Failed to update task",
-        });
+        dispatch(toggleTaskStatus(id));
+      } catch (error) {
+        message.error("Failed to update task");
       }
-    } catch (error) {
-      message.open({
-        type: "error",
-        content: "Failed to update task",
-      });
-    }
+    };
   };
 
   const columns: TableColumnsType<DataTypes> = [
@@ -180,8 +91,8 @@ const CustomTable: React.FC = ({}) => {
         record.id === editingTask.id ? (
           <Input
             value={editingTask.title}
-            onChange={handleInputChange}
-            onPressEnter={() => handleSaveEdit(record.key)}
+            // onChange={handleInputChange}
+            // onPressEnter={() => handleSaveEdit(record.key)}
           />
         ) : (
           <div
@@ -228,19 +139,19 @@ const CustomTable: React.FC = ({}) => {
       render: (_, record) => (
         <>
           <Button
-            onClick={() => toggleStatusTask(record.id)}
+            onClick={() => toggleStatusTaskAndHandleError(record.id)}
             style={{ fontSize: 10 }}
           >
             <CheckOutlined style={{ color: "purple" }} />
           </Button>
           <Button
-            onClick={() => handleEditTask(/*record.id*/ record)}
+            // onClick={() => handleEditTask(/*record.id*/ record)}
             style={{ fontSize: 10 }}
           >
             <EditOutlined />
           </Button>
           <Button
-            onClick={() => handleDeleteTask(record.id)}
+            // onClick={() => handleDeleteTask(record.id)}
             style={{ fontSize: 10 }}
           >
             <DeleteOutlined style={{ color: "red" }} />
@@ -254,7 +165,7 @@ const CustomTable: React.FC = ({}) => {
   return (
     <Table
       columns={columns}
-      dataSource={tasklistData(todoList)}
+      dataSource={todoList}
       rowKey="id"
       pagination={{ pageSize: 3 }}
     />
@@ -262,3 +173,6 @@ const CustomTable: React.FC = ({}) => {
 };
 
 export default CustomTable;
+function toggleTaskStatus(id: string): any {
+  throw new Error("Function not implemented.");
+}
