@@ -2,13 +2,15 @@ import { RootState } from "@/redux/store";
 import { AsyncThunk } from "@reduxjs/toolkit";
 
 export type TodoType = {
-    id: string;
+    id: number;
     title: string;
     completed: boolean;
+    userId: number;
 };
 
+
 export type UserType = {
-    id: string;
+    id: number;
     email: string;
     phone: string;
     username: string;

@@ -1,4 +1,3 @@
-import { Inter } from "next/font/google";
 import {
   Avatar,
   Badge,
@@ -20,16 +19,11 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import AddTaskForm from "@/forms/AddTaskForm/AddTaskForm";
 import CustomTable from "@/ui/CustomTable/CustomTable";
-import LoginForm from "@/forms/LoginForm";
-import axios from "axios";
-// import { fetchTodo } from "@/redux/features/todoSlice/todo-slice";
-import { useDispatch } from "react-redux";
+import AddTaskModal from "@/components/modals/AddTaskModal";;
+import router from "next/router";
 import { logout } from "@/redux/features/userSlice/user-slice";
-import { resetTodo } from "@/redux/features/todoSlice/todo-slice";
-
-const inter = Inter({ subsets: ["latin"] });
+import { useDispatch } from "react-redux";
 
 const statusList = ["All", "Done", "Undone"];
 const menu = (
@@ -96,13 +90,7 @@ const alignOptions = ["flex-start", "center", "flex-end"];
 
 export default function Home() {
   const [isClickAddTaskButton, setClickAddTaskButton] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [userData, setUserData] = useState("");
-
-  const isBrowser = typeof window !== "undefined"; // Проверяем, что код выполняется в браузерной среде
-  const [isLogin, setIsLogin] = useState<boolean>(
-    isBrowser && localStorage.getItem("isLoggedIn") === "true"
-  );
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -114,34 +102,16 @@ export default function Home() {
     }
   }, [userData]);
 
-  const handleSuccessfulLogin = () => {
-    setIsLogin(true);
-  };
-
-  const handleLogin = async () => {
-    setIsModalVisible(true);
-    // setIsLogin(true);
-  };
-
   const handleLogout = () => {
     localStorage.clear();
-    // dispatch(fetchTodo([]));
-    dispatch(resetTodo());
     dispatch(logout());
-    setIsLogin(false);
     setUserData("");
+    router.push("/LoginPage");
   };
 
-  const content = isLogin ? (
+  const content = (
     <Button style={{ width: 150, height: 40 }} onClick={handleLogout}>
       Exit
-    </Button>
-  ) : (
-    <Button
-      style={{ width: 150, height: 40, marginRight: 10 }}
-      onClick={handleLogin}
-    >
-      Login
     </Button>
   );
   return (
@@ -160,20 +130,8 @@ export default function Home() {
         >
           <Flex
             align="center"
-            // flex-direction="column"
             justify="space-between"
-            // style={{ width: 1366, height: 1024 }}
           >
-            {/* <Typography
-              style={{
-                fontSize: "96px",
-                fontFamily: "Roboto",
-                fontWeight: "700",
-                color: "#404040",
-              }}
-            >
-              TODO <span style={{ color: "#9333ea" }}>UI</span>
-            </Typography> */}
             <Flex>
               <Layout style={{ borderRadius: 10, background: "transparent" }}>
                 <Layout.Header
@@ -193,7 +151,6 @@ export default function Home() {
                     <Popover
                       content={content}
                       title="Welcome, user!"
-                      // trigger="click"
                       placement="bottomRight"
                     >
                       <Badge dot>
@@ -215,7 +172,6 @@ export default function Home() {
                 >
                   <Layout
                     style={{
-                      // width: 457,
                       height: 320,
                       borderRadius: 10,
                       padding: "31px 17px 21px 21px",
@@ -239,7 +195,6 @@ export default function Home() {
                         border: "1px solid gray",
                       }}
                       onClick={() => setClickAddTaskButton(true)}
-                      disabled={!isLogin}
                     >
                       Add Task
                     </Button>
@@ -250,14 +205,9 @@ export default function Home() {
           </Flex>
         </Layout>
       </main>
-      <AddTaskForm
+      <AddTaskModal
         visible={isClickAddTaskButton}
         onCancel={() => setClickAddTaskButton(false)}
-      />
-      <LoginForm
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        onSuccessLogin={handleSuccessfulLogin}
       />
     </>
   );

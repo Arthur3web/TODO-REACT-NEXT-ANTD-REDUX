@@ -8,7 +8,7 @@ import axios from "axios";
 import { DataTypes } from "@/ui/CustomTable/CustomTable";
 // import { createUser } from "@/redux/features/user-slice";
 
-interface RegistrationFormProps {
+interface RegistrationPageProps {
   visible: boolean;
   onCancel: () => void;
 }
@@ -35,7 +35,7 @@ const StyledButton = styled(Button)`
     }
   }
 `;
-const RegistrationForm: React.FC<RegistrationFormProps> = ({
+const RegistrationPage: React.FC<RegistrationPageProps> = ({
   visible,
   onCancel,
 }) => {
@@ -129,4 +129,4 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   );
 };
 
-export default RegistrationForm;
+export default RegistrationPage;

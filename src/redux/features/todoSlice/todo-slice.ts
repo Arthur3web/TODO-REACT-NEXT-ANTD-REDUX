@@ -1,6 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { message } from "antd";
-import { addTasks, deleteTask, fetchTasks, toggleStatusTask } from "./actions";
+import { addTasks, deleteTask, fetchTasks, editTask } from "./actions";
 import { Status, TodoType } from "../types vs interfaces/types";
 
 interface TodoState {
@@ -69,24 +69,20 @@ export const todo = createSlice({
         state.error = action.error.message ?? "Failed to add tasks";
         message.error(state.error);
       })
-      .addCase(
-        toggleStatusTask.fulfilled,
-        (state, action) => {
-          const taskId = action.payload;
-          const todo = state.taskList.find((todo) => todo.id === taskId);
-          if (todo) {
-            todo.completed = !todo.completed;
-          }
+      .addCase(editTask.fulfilled, (state, action) => {
+        const updatedTask = action.payload;
+        const todoIndex = state.taskList.findIndex(
+          (todo) => todo.id === updatedTask.id
+        );
+        if (todoIndex !== -1) {
+          state.taskList[todoIndex] = updatedTask;
         }
-      )
-      .addCase(
-        toggleStatusTask.rejected,
-        (state, action) => {
-          state.status = "failed";
-          state.error = action.error.message ?? "Failed to toggle status tasks";
-          message.error(state.error);
-        }
-      );
+      })
+      .addCase(editTask.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message ?? "Failed to edit task";
+        message.error(state.error);
+      });
   },
 });
 

@@ -4,12 +4,12 @@ import { DataTypes } from "@/ui/CustomTable/CustomTable";
 import { useDispatch } from "react-redux";
 import { addTasks } from "@/redux/features/todoSlice/actions";
 
-interface AddTaskFormProps {
+interface AddTaskModalProps {
   visible: boolean;
   onCancel: () => void;
 }
 
-const AddTaskForm: React.FC<AddTaskFormProps> = ({ visible, onCancel }) => {
+const AddTaskModal: React.FC<AddTaskModalProps> = ({ visible, onCancel }) => {
   const [title, setTitle] = useState<string>("");
   const [tasks, setTasks] = useState<DataTypes[]>([]);
   const dispatch = useDispatch();
@@ -67,4 +67,4 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ visible, onCancel }) => {
   );
 };
 
-export default AddTaskForm;
+export default AddTaskModal;

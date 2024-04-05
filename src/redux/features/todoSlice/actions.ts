@@ -2,7 +2,6 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { AddTaskAsyncThunk } from "../types vs interfaces/types";
 
-
 export const fetchTasks = createAsyncThunk(
     //выполняет асинхронный запрос к API для получения списка задач.
     "todo/fetchTasks",
@@ -32,6 +31,9 @@ export const addTasks: AddTaskAsyncThunk = createAsyncThunk(
   async (taskData: { title: string }, { dispatch }) => {
     try {
       const userDataString = localStorage.getItem("loggedInUser");
+      if (userDataString === null) {
+        throw new Error("User data not found in local storage");
+      }
       const userData = JSON.parse(userDataString);
       const response = await axios.post(
         "https://jsonplaceholder.typicode.com/todos",
@@ -39,7 +41,6 @@ export const addTasks: AddTaskAsyncThunk = createAsyncThunk(
           title: taskData.title, 
           completed: false,
           userId: userData.id,
-          // id: new Date().getTime(),
         }
       );
       const newTask = response.data;
@@ -54,7 +55,7 @@ export const deleteTask = createAsyncThunk(
   "todo/deleteTask",
   async (id) => {
     try {
-      await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
+      const response = await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
       return id;
     } catch (error) {
       throw new Error("Failed to delete task");
@@ -62,14 +63,14 @@ export const deleteTask = createAsyncThunk(
   }
 )
 
-export const toggleStatusTask = createAsyncThunk(
-  "todo/toggleStatusTask",
-  async (id) => {
+export const editTask = createAsyncThunk(
+  "todo/editTask",
+  async ({ id, title, completed } : {id: number, title: string, completed: boolean}) => {
     try {
-      const response = await axios.put(`https://jsonplaceholder.typicode.com/todos/${id}`);
+      const response = await axios.put(`https://jsonplaceholder.typicode.com/todos/${id}`, {title, completed});
       return response.data;
     } catch (error) {
-      throw new Error("Failed to toggleStatusTask");
+      throw new Error("Failed to edit Task");
     }
   }
 )

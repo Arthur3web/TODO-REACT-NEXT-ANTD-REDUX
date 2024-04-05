@@ -1,31 +1,33 @@
-import { Button, Input, Spin, Table, TableColumnsType, message } from "antd";
-import { CheckOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
 import React from "react";
+import {
+  Button,
+  Spin,
+  Table,
+  TableColumnsType,
+} from "antd";
+import {
+  CheckOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { fetchTasks } from "@/redux/features/todoSlice/actions";
 import { RootState } from "@/redux/store";
+import EditTaskModal from "@/components/modals/EditTaskModal";
+import DeleteTaskModal from "@/components/modals/DeleteTaskModal";
+import { TodoType } from "@/redux/features/types vs interfaces/types";
 
-export interface DataTypes {
-  id: string;
-  key: string;
-  title: string;
-  completed: boolean;
-  userId: number;
-  email: string;
-  password: string;
-  username: string;
-  phone: string;
-}
-
-const CustomTable: React.FC = ({}) => {
+const CustomTable: React.FC = ({}) => { ////
   const dispatch = useDispatch<any>();
-  const todoList = useSelector((state: RootState) => state.todo.taskList); //используем todoList из ReduxStore, поэтому локальное состояние для tasks можно не использовать
+  const todoList = useSelector((state: RootState) => state.todo.taskList); //используем todoList из ReduxStore
   const todoState = useSelector((state: RootState) => state.todo);
-  console.log("Current todo state:", todoState); 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  console.log("Current todo state:", todoState);
   const [editingTask, setEditingTask] = useState<{
-    id: string | null;
+    id: number | null;
     title: string;
   }>({ id: null, title: "" });
   const isBrowser = typeof window !== "undefined";
@@ -41,7 +43,9 @@ const CustomTable: React.FC = ({}) => {
     }
   }, [isLogin]);
 
-  const loading = useSelector((state: RootState) => state.todo.status === "loading");
+  const loading = useSelector(
+    (state: RootState) => state.todo.status === "loading"
+  );
   const error = useSelector((state: RootState) => state.todo.error);
 
   if (loading) {
@@ -58,61 +62,53 @@ const CustomTable: React.FC = ({}) => {
     return <div>Error: {error}</div>;
   }
 
-  const toggleStatusTaskAndHandleError = (id: string) => {
-    return async (dispatch: any) => {
-      try {
-        const taskToUpdate = todoList.find((task) => task.id === id);
-        if (!taskToUpdate) {
-          throw new Error("Task not found");
-        }
-        const updatedTask = {
-          ...taskToUpdate,
-          completed: !taskToUpdate.completed,
-        };
-        await axios.put(
-          `https://jsonplaceholder.typicode.com/todos/${id}`,
-          updatedTask
-        );
-        dispatch(toggleTaskStatus(id));
-      } catch (error) {
-        message.error("Failed to update task");
-      }
-    };
+  const handleEditButton = (id: number) => {
+    const task = todoList.find((task) => task.id === id);
+    if (task) {
+      setIsEditModalOpen(true);
+      setEditingTask(task);
+    }
+  };
+  const handleDeleteButton = (id: number) => {
+    const task = todoList.find((task) => task.id === id);
+    if (task) {
+      setIsDeleteModalOpen(true);
+      setEditingTask(task);
+    }
   };
 
-  const columns: TableColumnsType<DataTypes> = [
+  const columns: TableColumnsType<TodoType> = [
     {
       title: "Task Title",
       dataIndex: "title",
       key: "title",
       width: 160,
       ellipsis: true,
-      render: (text: string, record: DataTypes) =>
-        record.id === editingTask.id ? (
-          <Input
-            value={editingTask.title}
-            // onChange={handleInputChange}
-            // onPressEnter={() => handleSaveEdit(record.key)}
-          />
-        ) : (
-          <div
-            style={{
-              color: record.completed ? "#9333ea" : "black",
-              textDecoration: record.completed ? "line-through" : "",
-            }}
-          >
-            {record.title}
-          </div>
-        ),
+      render: (text: string, record: TodoType) => (
+        <span
+          style={{
+            color: record.completed ? "#9333ea" : "black",
+            textDecoration: record.completed ? "line-through" : "",
+          }}
+        >
+          {text}
+        </span>
+      ),
     },
     {
       title: "Status",
       dataIndex: "completed",
       key: "completed",
       render: (completed: boolean) => (
-        <span>{completed ? "Completed" : "Not Completed"}</span>
+        <span>
+          {completed ? (
+            <CheckOutlined style={{ color: "green" }} />
+          ) : (
+            <CloseOutlined style={{ color: "red" }} />
+          )}
+        </span>
       ),
-      width: 60,
+      width: 40,
       filters: [
         {
           text: "Completed",
@@ -124,12 +120,7 @@ const CustomTable: React.FC = ({}) => {
         },
       ],
       onFilter: (value, record) => {
-        if (value === "Completed") {
-          return record.completed;
-        } else if (value === "Not Completed") {
-          return !record.completed;
-        }
-        return true;
+        return record.completed === (value === "Completed");
       },
     },
     {
@@ -139,40 +130,44 @@ const CustomTable: React.FC = ({}) => {
       render: (_, record) => (
         <>
           <Button
-            onClick={() => toggleStatusTaskAndHandleError(record.id)}
-            style={{ fontSize: 10 }}
-          >
-            <CheckOutlined style={{ color: "purple" }} />
-          </Button>
-          <Button
-            // onClick={() => handleEditTask(/*record.id*/ record)}
+            onClick={() => handleEditButton(record.id)}
             style={{ fontSize: 10 }}
           >
             <EditOutlined />
           </Button>
           <Button
-            // onClick={() => handleDeleteTask(record.id)}
+            onClick={() => handleDeleteButton(record.id)}
             style={{ fontSize: 10 }}
           >
             <DeleteOutlined style={{ color: "red" }} />
           </Button>
         </>
       ),
-      width: 90,
+      width: 50,
     },
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={todoList}
-      rowKey="id"
-      pagination={{ pageSize: 3 }}
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={todoList}
+        rowKey="id"
+        pagination={{ pageSize: 3 }}
+      />
+      <EditTaskModal
+        visible={isEditModalOpen}
+        onCancel={() => setIsEditModalOpen(false)}
+        task={editingTask}
+      />
+      <DeleteTaskModal
+        visible={isDeleteModalOpen}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        task={editingTask}
+
+      />
+    </>
   );
 };
 
 export default CustomTable;
-function toggleTaskStatus(id: string): any {
-  throw new Error("Function not implemented.");
-}
