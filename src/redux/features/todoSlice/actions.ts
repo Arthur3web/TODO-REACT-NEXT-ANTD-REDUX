@@ -70,6 +70,7 @@ export const editTask = createAsyncThunk(
       const response = await axios.put(`https://jsonplaceholder.typicode.com/todos/${id}`, {title, completed});
       return response.data;
     } catch (error) {
+      console.error("Failed to edit Task:", error);
       throw new Error("Failed to edit Task");
     }
   }

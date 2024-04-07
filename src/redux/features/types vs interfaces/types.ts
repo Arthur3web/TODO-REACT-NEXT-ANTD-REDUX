@@ -2,10 +2,10 @@ import { RootState } from "@/redux/store";
 import { AsyncThunk } from "@reduxjs/toolkit";
 
 export type TodoType = {
-    id: number;
+    id: number | null;
     title: string;
-    completed: boolean;
-    userId: number;
+    completed?: boolean;
+    userId?: number;
 };
 
 

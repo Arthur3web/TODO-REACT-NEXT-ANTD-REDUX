@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
-import { DataTypes } from "@/ui/CustomTable/CustomTable";
+// import { DataTypes } from "@/ui/CustomTable/CustomTable";
 import { useDispatch } from "react-redux";
 import { addTasks } from "@/redux/features/todoSlice/actions";
+import { TodoType } from "@/redux/features/types vs interfaces/types";
+import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
+import { RootState } from "@/redux/store";
 
 interface AddTaskModalProps {
   visible: boolean;
@@ -11,7 +14,7 @@ interface AddTaskModalProps {
 
 const AddTaskModal: React.FC<AddTaskModalProps> = ({ visible, onCancel }) => {
   const [title, setTitle] = useState<string>("");
-  const [tasks, setTasks] = useState<DataTypes[]>([]);
+  const [tasks, setTasks] = useState<TodoType[]>([]);
   const dispatch = useDispatch();
 
   const handleAddTask = async () => {
@@ -23,7 +26,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ visible, onCancel }) => {
         });
         return;
       }
-      const newTask = await dispatch(addTasks({ title: title }));
+      // const newTask = await dispatch(addTasks({ title: title }));
+      const asyncDispatch = dispatch as ThunkDispatch<RootState, void, AnyAction>;
+      const newTask = await asyncDispatch(addTasks({ title: title }));
       setTasks((prevTasks: any) => [...prevTasks, newTask]);
       onCancel();
       setTitle("");

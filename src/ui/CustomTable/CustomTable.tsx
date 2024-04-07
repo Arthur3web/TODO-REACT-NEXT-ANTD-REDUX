@@ -41,7 +41,7 @@ const CustomTable: React.FC = ({}) => { ////
     if (isLogin) {
       dispatch(fetchTasks());
     }
-  }, [isLogin]);
+  }, [dispatch, isLogin]);
 
   const loading = useSelector(
     (state: RootState) => state.todo.status === "loading"
@@ -62,14 +62,14 @@ const CustomTable: React.FC = ({}) => { ////
     return <div>Error: {error}</div>;
   }
 
-  const handleEditButton = (id: number) => {
+  const handleEditButton = (id: number | null) => {
     const task = todoList.find((task) => task.id === id);
     if (task) {
       setIsEditModalOpen(true);
       setEditingTask(task);
     }
   };
-  const handleDeleteButton = (id: number) => {
+  const handleDeleteButton = (id: number | null) => {
     const task = todoList.find((task) => task.id === id);
     if (task) {
       setIsDeleteModalOpen(true);
