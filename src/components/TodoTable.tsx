@@ -12,24 +12,27 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { fetchTasks } from "@/redux/features/todoSlice/actions";
 import { RootState } from "@/redux/store";
 import EditTaskModal from "@/components/modals/EditTaskModal";
 import DeleteTaskModal from "@/components/modals/DeleteTaskModal";
-import { TodoType } from "@/redux/features/types vs interfaces/types";
+import { TodoType } from "@/redux/features/interface/types";
+import { useAppDispatch } from "@/redux/hooks";
 
-const CustomTable: React.FC = ({}) => { ////
-  const dispatch = useDispatch<any>();
+const TodoTable: React.FC = ({}) => { ////
+  const dispatch = useAppDispatch();
   const todoList = useSelector((state: RootState) => state.todo.taskList); //используем todoList из ReduxStore
   const todoState = useSelector((state: RootState) => state.todo);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   console.log("Current todo state:", todoState);
-  const [editingTask, setEditingTask] = useState<{
-    id: number | null;
-    title: string;
-  }>({ id: null, title: "" });
+  const [editingTask, setEditingTask] = useState<TodoType>({
+    id: null,
+    title: "",
+    completed: false,
+    // userId: 0, 
+  });
   const isBrowser = typeof window !== "undefined";
   const isLogin = isBrowser && localStorage.getItem("isLoggedIn") === "true";
 
@@ -170,4 +173,4 @@ const CustomTable: React.FC = ({}) => { ////
   );
 };
 
-export default CustomTable;
+export default TodoTable;

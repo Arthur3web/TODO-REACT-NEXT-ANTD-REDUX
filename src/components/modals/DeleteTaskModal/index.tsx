@@ -1,8 +1,8 @@
-import { Modal, Form, Button, message, Flex } from "antd";
-import { useDispatch } from "react-redux";
+import { Modal, Form, Button, message } from "antd";
 import { deleteTask } from "@/redux/features/todoSlice/actions";
 import axios from "axios";
-import { TodoType } from "@/redux/features/types vs interfaces/types";
+import { TodoType } from "@/redux/features/interface/types";
+import { useAppDispatch } from "@/redux/hooks";
 
 interface DeleteTaskModalProps {
   visible: boolean;
@@ -15,7 +15,7 @@ const DeleteTaskModal: React.FC<DeleteTaskModalProps> = ({
   onCancel,
   task,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleDeleteTask = async () => {
     try {

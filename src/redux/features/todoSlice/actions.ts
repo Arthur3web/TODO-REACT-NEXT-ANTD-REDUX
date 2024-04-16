@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { AddTaskAsyncThunk } from "../types vs interfaces/types";
+import { AddTaskAsyncThunk, TodoType } from "../interface/types";
 
 export const fetchTasks = createAsyncThunk(
     //выполняет асинхронный запрос к API для получения списка задач.
@@ -51,27 +51,31 @@ export const addTasks: AddTaskAsyncThunk = createAsyncThunk(
   }
 )
 
-export const deleteTask = createAsyncThunk(
+export const deleteTask = createAsyncThunk<TodoType, number | null>(
   "todo/deleteTask",
-  async (id) => {
+  async (id: any, thunkApi) => {
     try {
-      const response = await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
+      await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
       return id;
     } catch (error) {
-      throw new Error("Failed to delete task");
+      console.error("Failed to delete Task:", error)
+      return thunkApi.rejectWithValue(error);
     }
   }
 )
 
-export const editTask = createAsyncThunk(
+export const editTask = createAsyncThunk<TodoType, TodoType>(
   "todo/editTask",
-  async ({ id, title, completed } : {id: number, title: string, completed: boolean}) => {
+  async ({ id,title, completed }, thunkApi) => {
+    // thunkApi.dispatch()
+    const kek = thunkApi.getState()
+    console.log(kek);
     try {
-      const response = await axios.put(`https://jsonplaceholder.typicode.com/todos/${id}`, {title, completed});
+      const response = await axios.put<TodoType>(`https://jsonplaceholder.typicode.com/todos/${id}`, {title, completed});
       return response.data;
     } catch (error) {
       console.error("Failed to edit Task:", error);
-      throw new Error("Failed to edit Task");
+      return thunkApi.rejectWithValue(error)
     }
   }
 )

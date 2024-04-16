@@ -4,13 +4,13 @@ import { AsyncThunk } from "@reduxjs/toolkit";
 export type TodoType = {
     id: number | null;
     title: string;
-    completed?: boolean;
+    completed: boolean;
     userId?: number;
 };
 
 
 export type UserType = {
-    id: number;
+    // id: number;
     email: string;
     phone: string;
     username: string;

@@ -1,33 +1,10 @@
 import React, { useState } from "react";
-import { Form, Input, Button, message, Flex, Card } from "antd";
+import { Form, Input, message, Flex, Card } from "antd";
 import Link from "next/link";
-import styled from "styled-components";
-import { useDispatch } from "react-redux";
 import { loginUser } from "@/redux/features/userSlice/actions";
 import router from "next/router";
-
-const StyledButton = styled(Button)`
-  & {
-    height: 40px;
-    width: 185px;
-    border-radius: 10px;
-    background: rgba(103, 184, 203, 0.06);
-    color: #67b8cb;
-
-    &:hover {
-      background: rgba(103, 184, 203, 0.03);
-      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
-    }
-
-    &:active {
-      transform: scale(0.9);
-    }
-
-    &:focus {
-      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
-    }
-  }
-`;
+import { useAppDispatch } from "@/redux/hooks";
+import { StyledButton } from "@/ui/Buttons/StyleButton";
 
 interface IInitialValues {
   email: string;
@@ -44,7 +21,7 @@ const LoginPage: React.FC = ({}) => {
   const [isLogin, setIsLogin] = useState<boolean>(
     isBrowser && localStorage.getItem("isLoggedIn") === "true"
   );
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleLogin = async (values: { email: string; password: string }) => {
     const { email, password } = values;

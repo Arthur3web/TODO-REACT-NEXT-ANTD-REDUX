@@ -1,16 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { loginUser } from "./actions";
-import { Status, UserType } from "../types vs interfaces/types";
+import { Status, UserType } from "../interface/types";
 
 export interface UserState {
-  // userList: UserType[];
+  userList: UserType[];
   loggedInUser: UserType | null;
   error: string | null;
   status: Status;
 };
 
 const initialState: UserState = {
-  // userList: [],
+  userList: [],
   loggedInUser: null,
   error: null,
   status: "idle",
@@ -24,6 +24,11 @@ export const users = createSlice({
       state.loggedInUser = null;
       state.status = "idle";
       state.error = null;
+    },
+    createUser: (state, action) => {
+      state.userList.push(action.payload);
+      console.log(state);
+      console.log(action);
     },
   },
   extraReducers: (builder) => {
@@ -42,5 +47,5 @@ export const users = createSlice({
   },
 });
 
-export const { logout } = users.actions;
+export const { logout, createUser } = users.actions;
 export default users.reducer;

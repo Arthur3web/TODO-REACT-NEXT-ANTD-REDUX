@@ -1,54 +1,23 @@
 import { useState } from "react";
-import { Modal, Form, Input, Button, message } from "antd";
+import { Form, Input, message, Flex, Card } from "antd";
 import Link from "next/link";
-import styled from "styled-components";
-import LoginForm from "../LoginForm";
-import { useDispatch } from "react-redux";
 import axios from "axios";
-import { DataTypes } from "@/ui/CustomTable/CustomTable";
-// import { createUser } from "@/redux/features/user-slice";
+import { UserType } from "@/redux/features/interface/types";
+import { useAppDispatch } from "@/redux/hooks";
+import { createUser } from "@/redux/features/userSlice/user-slice";
+import { StyledButton } from "@/ui/Buttons/StyleButton";
 
-interface RegistrationPageProps {
-  visible: boolean;
-  onCancel: () => void;
-}
-
-const StyledButton = styled(Button)`
-  & {
-    height: 40px;
-    width: 185px;
-    border-radius: 10px;
-    background: rgba(103, 184, 203, 0.06);
-    color: #67b8cb;
-
-    &:hover {
-      background: rgba(103, 184, 203, 0.03);
-      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
-    }
-
-    &:active {
-      transform: scale(0.9);
-    }
-
-    &:focus {
-      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
-    }
-  }
-`;
-const RegistrationPage: React.FC<RegistrationPageProps> = ({
-  visible,
-  onCancel,
-}) => {
+const RegistrationPage: React.FC = ({}) => {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string>("");
-  // const [users, setUsers] = useState<DataTypes[]>([]);
-  // const dispatch = useDispatch();
+  const [users, setUsers] = useState<UserType[]>([]);
+  const dispatch = useAppDispatch();
 
   const handleRegister = async () => {
     if (email && password && username) {
       try {
-        const response = await axios.post<DataTypes>(
+        const response = await axios.post(
           `https://jsonplaceholder.typicode.com/users`,
           {
             email: email,
@@ -56,15 +25,15 @@ const RegistrationPage: React.FC<RegistrationPageProps> = ({
             username: username,
           }
         );
-        // setUsers((prevUsers) => [...prevUsers, response.data]);
         console.log(response);
-        // console.log(users);
-        // dispatch(createUser(response.data))
+        setUsers((prevUsers) => [...prevUsers, response.data]);
+        console.log(users);
+        dispatch(createUser(response.data));
         setEmail("");
         setPassword("");
         setUsername("");
         message.open({
-          type: "error",
+          type: "success",
           content: "Пользователь зарегистрирован",
         });
       } catch (error: any) {
@@ -76,55 +45,53 @@ const RegistrationPage: React.FC<RegistrationPageProps> = ({
     }
   };
 
-  const handleCancel = () => {
-    onCancel();
-  };
-
   return (
     <>
-      <Modal
-        title={
-          <div style={{ textAlign: "center", color: "#9333ea" }}>
-            REGISTRATION
-          </div>
-        }
-        open={visible}
-        onCancel={handleCancel}
-        footer={null}
-        centered
-      >
-        <Form onFinish={handleRegister}>
-          <Form.Item
-            name="email"
-            rules={[{ required: true, message: "Please input your email!" }]}
-          >
-            <Input placeholder="Email" />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: "Please input your password!" }]}
-          >
-            <Input.Password placeholder="Password" />
-          </Form.Item>
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: "Please input your username!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item>
-            <div>
-              Do you have an account?{" "}
-              <Link href="#" style={{ color: "red" }}>
-                Login
-              </Link>
-            </div>
-            <StyledButton type="primary" htmlType="submit">
-              Register
-            </StyledButton>
-          </Form.Item>
-        </Form>
-      </Modal>
+      <Flex justify="center">
+        <Card
+          title="REGISTRATION"
+          style={{ textAlign: "center", color: "#9333ea", width: 300 }}
+        >
+          <Form
+            name="register"
+            onFinish={handleRegister}
+            >
+            <Form.Item
+              name="email"
+              rules={[{ required: true, message: "Please input your email!" }]}
+            >
+              <Input placeholder="Email" />
+            </Form.Item>
+            <Form.Item
+              name="password"
+              rules={[
+                { required: true, message: "Please input your password!" },
+              ]}
+            >
+              <Input.Password placeholder="Password" />
+            </Form.Item>
+            <Form.Item
+              name="username"
+              rules={[
+                { required: true, message: "Please input your username!" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <div>
+                Do you have an account?{" "}
+                <Link href="/LoginPage" style={{ color: "red" }}>
+                  Login
+                </Link>
+              </div>
+              <StyledButton type="primary" htmlType="submit">
+                Register
+              </StyledButton>
+            </Form.Item>
+          </Form>
+        </Card>
+      </Flex>
     </>
   );
 };

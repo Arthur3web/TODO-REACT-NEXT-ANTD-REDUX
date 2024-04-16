@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Modal, Form, Input, Button, message, Select, Flex } from "antd";
-import { useDispatch } from "react-redux";
 import { editTask } from "@/redux/features/todoSlice/actions";
 import axios from "axios";
-import { AddTaskAsyncThunk, TodoType } from "@/redux/features/types vs interfaces/types";
+import { TodoType } from "@/redux/features/interface/types";
+import { useAppDispatch } from "@/redux/hooks";
 
 interface EditTaskModalProps {
   visible: boolean;
@@ -18,7 +18,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
 }) => {
   const [note, setNote] = useState<string>(task.title);
   const [isCompleted, setIsCompleted] = useState<boolean>(task.completed);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
     setIsCompleted(task.completed);
   }, [task]);
 
-  const handleSaveEdit = async (id: number, dispatch: Dispatch<AddTaskAsyncThunk>) => {
+  const handleSaveEdit = async (id: number | null) => {
     try {
       const response = await axios.put(
         `https://jsonplaceholder.typicode.com/todos/${task.id}`,
@@ -40,7 +40,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
         }
       );
       if (response.status === 200) {
-        dispatch(editTask({ id: task.id, title: note, completed: isCompleted }));
+        dispatch(editTask({id: task.id, completed: isCompleted, title: note})); 
         setNote("");
         onCancel();
       } else {

@@ -19,11 +19,11 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import CustomTable from "@/ui/CustomTable/CustomTable";
 import AddTaskModal from "@/components/modals/AddTaskModal";;
 import router from "next/router";
 import { logout } from "@/redux/features/userSlice/user-slice";
 import { useDispatch } from "react-redux";
+import TodoTable from "@/components/TodoTable";
 
 const statusList = ["All", "Done", "Undone"];
 const menu = (
@@ -178,7 +178,7 @@ export default function Home() {
                       background: "white",
                     }}
                   >
-                    <CustomTable />
+                    <TodoTable />
                     <Button
                       icon={
                         <PlusOutlined

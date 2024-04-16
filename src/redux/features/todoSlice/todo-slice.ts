@@ -1,7 +1,7 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { message } from "antd";
 import { addTasks, deleteTask, fetchTasks, editTask } from "./actions";
-import { Status, TodoType } from "../types vs interfaces/types";
+import { Status, TodoType } from "../interface/types";
 
 interface TodoState {
   taskList: TodoType[];
@@ -22,10 +22,10 @@ export const todo = createSlice({
     //редукторы для управления состоянием списка задач.
 
     resetTodo: (state) => {
-      // state = initialState;
-      state.taskList = initialState.taskList;
-      state.status = initialState.status;
-      state.error = initialState.error;
+      state = initialState;
+      // state.taskList = initialState.taskList;
+      // state.status = initialState.status;
+      // state.error = initialState.error;
     },
   },
   extraReducers(builder) {
